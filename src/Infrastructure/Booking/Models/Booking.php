@@ -18,6 +18,7 @@ class Booking extends Model
     ];
 
     protected $casts = [
+        'id' => 'string',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
         'total_price' => 'decimal:2',

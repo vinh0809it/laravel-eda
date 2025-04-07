@@ -1,11 +1,11 @@
 <?php
 
-namespace Src\Domain\Car\Repositories;
+namespace Src\Domain\Car\Projections;
 
-use Src\Domain\Shared\Repositories\IBaseRepository;
+use Src\Domain\Shared\Projections\IBaseProjection;
 use Illuminate\Database\Eloquent\Collection;
 
-interface ICarRepository extends IBaseRepository
+interface ICarProjection extends IBaseProjection
 {
     public function updateAvailability(string $id, bool $isAvailable);
     public function getAvailableCars(): Collection;

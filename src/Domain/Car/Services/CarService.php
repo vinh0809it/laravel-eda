@@ -2,19 +2,19 @@
 
 namespace Src\Domain\Car\Services;
 
-use Src\Domain\Car\Repositories\ICarRepository;
+use Src\Domain\Car\Projections\ICarProjection;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Car\Aggregate\CarAggregate;
 
 class CarService implements ICarService
 {
     public function __construct(
-        private readonly ICarRepository $carRepository
+        private readonly ICarProjection $carProjection
     ) {}
 
     public function findCarById(string $carId): CarAggregate
     {
-        $car = $this->carRepository->findById($carId);
+        $car = $this->carProjection->findById($carId);
         if (!$car) {
             throw new CarNotFoundException(
                 trace: ['carId' => $carId]
@@ -33,7 +33,7 @@ class CarService implements ICarService
 
     public function isAvailable(string $carId): bool
     {
-        $car = $this->carRepository->findById($carId);
+        $car = $this->carProjection->findById($carId);
         if (!$car) {
             throw new CarNotFoundException(
                 trace: ['carId' => $carId]
@@ -41,16 +41,16 @@ class CarService implements ICarService
         }
 
         return $car->is_available;
-    }
+    }   
 
     public function isCarExists(string $carId): bool
     {
-        return $this->carRepository->findById($carId) !== null;
+        return $this->carProjection->findById($carId) !== null;
     }
 
     public function getDailyPrice(string $carId): float
     {
-        $car = $this->carRepository->findById($carId);
+        $car = $this->carProjection->findById($carId);
         if (!$car) {
             throw new CarNotFoundException("Car not found with ID: {$carId}");
         }

@@ -47,7 +47,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
-        if ($request->route()->getPrefix() === 'api') {
+        if (str_starts_with($request->route()->getPrefix(), 'api')) {
             return $this->handleApiException($e);
         }
 

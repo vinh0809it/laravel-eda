@@ -11,6 +11,7 @@ class BookingCreated
         public readonly string $startDate,
         public readonly string $endDate,
         public readonly float $totalPrice,
+        public readonly string $status,
     ) {}
 
     public function toArray(): array
@@ -22,6 +23,7 @@ class BookingCreated
             'start_date' => $this->startDate,
             'end_date' => $this->endDate,
             'total_price' => $this->totalPrice,
+            'status' => $this->status,
         ];
     }
 } 

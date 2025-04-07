@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Application\Booking\Commands;
+namespace Src\Application\Booking\UseCases\Commands;
 
 use Src\Application\Shared\Interfaces\ICommand;
 

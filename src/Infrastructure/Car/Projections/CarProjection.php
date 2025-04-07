@@ -1,13 +1,13 @@
 <?php
 
-namespace Src\Infrastructure\Car\Repositories;
+namespace Src\Infrastructure\Car\Projections;
 
 use Src\Infrastructure\Car\Models\Car;
-use Src\Infrastructure\Shared\Repositories\BaseRepository;
+use Src\Infrastructure\Shared\Projections\BaseProjection;
 use Illuminate\Database\Eloquent\Collection;
-use Src\Domain\Car\Repositories\ICarRepository;
+use Src\Domain\Car\Projections\ICarProjection;
 
-class CarRepository extends BaseRepository implements ICarRepository
+class CarProjection extends BaseProjection implements ICarProjection
 {
     public function __construct(Car $model)
     {

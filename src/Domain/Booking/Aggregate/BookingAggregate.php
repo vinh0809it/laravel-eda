@@ -47,7 +47,8 @@ class BookingAggregate extends AggregateRoot
             userId: $userId,
             startDate: $startDate,
             endDate: $endDate,
-            totalPrice: $totalPrice
+            totalPrice: $totalPrice,
+            status: 'created'
         );
 
         $booking->recordEvent($event);

@@ -15,9 +15,12 @@ Route::middleware('api')->group(function () {
             return response()->json($request->user());
         });
 
-        // Booking routes
-        Route::resource('bookings', BookingController::class);
+        Route::prefix('v1')->group(function () {
+            Route::resource('bookings', BookingController::class);
+        });
+        
     });
 });
 
 Route::post('/login', [ApiAuthController::class, 'login']);
+
