@@ -16,7 +16,8 @@ Route::middleware('api')->group(function () {
         });
 
         Route::prefix('v1')->group(function () {
-            Route::resource('bookings', BookingController::class);
+            Route::get('bookings/{bookingId?}', [BookingController::class, 'index']);
+            Route::post('bookings', [BookingController::class, 'store']);
         });
         
     });

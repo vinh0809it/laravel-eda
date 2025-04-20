@@ -5,7 +5,7 @@ namespace Src\Application\Booking\Listeners;
 use Src\Domain\Booking\Events\BookingCreated;
 use Illuminate\Support\Facades\Log;
 
-class HandleBookingCreated
+class BookingCreatedListener
 {
     public function handle(BookingCreated $event): void
     {

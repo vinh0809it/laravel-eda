@@ -3,9 +3,21 @@
 namespace Src\Infrastructure\Booking\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Booking extends Model
 {
+    use HasFactory;
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\BookingFactory::new();
+    }
+
     protected $fillable = [
         'id',
         'car_id',

@@ -14,7 +14,7 @@ class GetBookingsQuery implements IQuery
         private readonly ?int $perPage = 10,
         private readonly ?string $sortBy = 'created_at',
         private readonly ?string $sortDirection = 'desc',
-        private readonly ?BookingId $bookingId = null,
+        private readonly ?string $bookingId = null,
         private readonly ?string $startDate = null,
         private readonly ?string $endDate = null,
         private readonly ?string $status = null,
@@ -42,7 +42,7 @@ class GetBookingsQuery implements IQuery
         return $this->sortDirection;
     }
 
-    public function getBookingId(): ?BookingId
+    public function getBookingId(): ?string
     {
         return $this->bookingId;
     }

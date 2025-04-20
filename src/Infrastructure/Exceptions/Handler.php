@@ -6,6 +6,8 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Src\Domain\Shared\Exceptions\BussinessException;
 
 class Handler extends ExceptionHandler
@@ -65,10 +67,20 @@ class Handler extends ExceptionHandler
         $statusCode = 500;
         $message = 'An unexpected error occurred';
         $errorCode = 'UNEXPECTED_ERROR';
+        $errorData = [];
 
         if( $e instanceof BussinessException) {
             $statusCode = $e->getCode();
             $errorCode = $e->getErrorCode();
+            $message = $e->getMessage();
+        }else if ($e instanceof ValidationException) {
+            $statusCode = 422;
+            $errorCode = 'VALIDATION_ERROR';
+            $message = $e->getMessage();
+            $errorData = $e->errors();
+        }else if ($e instanceof InvalidArgumentException) {
+            $statusCode = 422;
+            $errorCode = 'INVALID_ARGUMENT';
             $message = $e->getMessage();
         }else {
             Log::error('Unexpected error occurred', [
@@ -80,6 +92,7 @@ class Handler extends ExceptionHandler
         return response()->json([
             'error_code' => $errorCode,
             'msg' => $message,
+            'errors' => $errorData
         ], $statusCode);
     }
 } 

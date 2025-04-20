@@ -6,6 +6,7 @@ namespace Src\Domain\Booking\Services;
 
 use Src\Domain\Shared\Interfaces\IPaginationResult;
 use Src\Domain\Booking\Projections\IBookingProjection;
+use Src\Application\Booking\DTOs\BookingProjectionDTO;
 
 class BookingService implements IBookingService
 {
@@ -13,18 +14,18 @@ class BookingService implements IBookingService
         private readonly IBookingProjection $bookingProjection
     ) {}
 
-    public function isConflictWithOtherBookings(int $carId, string $startDate, string $endDate): bool
+    public function isConflictWithOtherBookings(string $userId, string $startDate, string $endDate): bool
     {
         $existingBookings = $this->bookingProjection->findByDateRange(
             $startDate,
             $endDate
         );
        
-        $conflictingBookings = $existingBookings->filter(function ($booking) use ($carId) {
-            return $booking->car_id === $carId;
+        $conflictingBookings = array_filter($existingBookings, function ($booking) use ($userId) {
+            return $booking->userId === $userId;
         });
         
-        return $conflictingBookings->isNotEmpty();
+        return count($conflictingBookings) > 0;
     }
 
     public function getBookings(
@@ -45,4 +46,9 @@ class BookingService implements IBookingService
 
         return $paginatedResult;
     }
+
+    public function getBookingById(string $bookingId): BookingProjectionDTO
+    {
+        return $this->bookingProjection->findById($bookingId);
+    }   
 }

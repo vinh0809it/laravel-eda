@@ -4,7 +4,7 @@ namespace Src\Domain\Pricing\Services;
 
 use Src\Domain\Pricing\Contracts\IPriceCalculator;
 use Src\Domain\Pricing\ValueObjects\Price;
-use Src\Application\Car\DTOs\CarDTO;
+use Src\Application\Car\DTOs\CarProjectionDTO;
 
 class PriceService implements IPriceService
 {
@@ -12,7 +12,7 @@ class PriceService implements IPriceService
         private readonly IPriceCalculator $priceCalculator,
     ) {}
 
-    public function calculateBookingPrice(CarDTO $car, string $startDate, string $endDate): float
+    public function calculateBookingPrice(CarProjectionDTO $car, string $startDate, string $endDate): float
     {
         $dailyPrice = $car->pricePerDay;
         $price = new Price($dailyPrice);

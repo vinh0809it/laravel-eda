@@ -23,24 +23,25 @@ class GetBookingsQueryHandler implements IQueryHandler
             throw new \InvalidArgumentException('Query must be an instance of GetBookingsQuery');
         }
 
-        $filters = [
-            'booking_id' => $query->getBookingId()?->value(),
-            'start_date' => $query->getStartDate(),
-            'end_date' => $query->getEndDate(),
-            'status' => $query->getStatus(),
-            'user_id' => $query->getUserId(),
-        ];
+        if($query->getBookingId()) {
 
-        $bookings = $this->bookingService->getBookings(
-            page: $query->getPage(),
-            perPage: $query->getPerPage(),
-            sortBy: $query->getSortBy(),
-            sortDirection: $query->getSortDirection(),
-            filters: array_filter($filters)
-        );
+            $bookings = $this->bookingService->getBookingById($query->getBookingId());
 
-        if ($bookings->items() === [] && $query->getBookingId()) {
-            throw new BookingNotFoundException($query->getBookingId()->value());
+        }else {
+            $filters = [
+                'start_date' => $query->getStartDate(),
+                'end_date' => $query->getEndDate(),
+                'status' => $query->getStatus(),
+                'user_id' => $query->getUserId(),
+            ];
+
+            $bookings = $this->bookingService->getBookings(
+                page: $query->getPage(),
+                perPage: $query->getPerPage(),
+                sortBy: $query->getSortBy(),
+                sortDirection: $query->getSortDirection(),
+                filters: array_filter($filters)
+            );
         }
 
         return $bookings;

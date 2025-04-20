@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Src\Domain\Booking\Events;
 
-class BookingCreated
+use Src\Domain\Shared\Events\IDomainEvent;
+
+class BookingCreated implements IDomainEvent
 {
     public function __construct(
         public readonly string $bookingId,
@@ -10,9 +14,23 @@ class BookingCreated
         public readonly string $userId,
         public readonly string $startDate,
         public readonly string $endDate,
-        public readonly float $totalPrice,
-        public readonly string $status,
+        public readonly float $totalPrice
     ) {}
+
+    public function getEventType(): string
+    {
+        return 'BookingCreated';
+    }
+
+    public function getAggregateType(): string
+    {
+        return 'Booking';
+    }
+
+    public function getAggregateId(): string
+    {
+        return $this->bookingId;
+    }
 
     public function toArray(): array
     {
@@ -22,8 +40,19 @@ class BookingCreated
             'user_id' => $this->userId,
             'start_date' => $this->startDate,
             'end_date' => $this->endDate,
-            'total_price' => $this->totalPrice,
-            'status' => $this->status,
+            'total_price' => $this->totalPrice
         ];
+    }
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            bookingId: $data['booking_id'],
+            carId: $data['car_id'],
+            userId: $data['user_id'],
+            startDate: $data['start_date'],
+            endDate: $data['end_date'],
+            totalPrice: $data['total_price']
+        );
     }
 } 

@@ -14,10 +14,7 @@ class CarServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Projection bindings
-        $this->app->bind(ICarProjection::class, function ($app) {
-            return new CarProjection($app->make(Car::class));
-        });
-
+        $this->app->singleton(ICarProjection::class, CarProjection::class);
         // Service bindings
         $this->app->singleton(ICarService::class, CarService::class);
     }

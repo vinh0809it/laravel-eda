@@ -2,7 +2,7 @@
 
 namespace Src\Application\Booking\UseCases\Commands;
 
-use Src\Domain\Booking\Aggregate\BookingAggregate;
+use Src\Domain\Booking\Aggregates\BookingAggregate;
 use Src\Domain\Booking\Services\IBookingService;
 use Src\Domain\Car\Services\ICarService;
 use Src\Domain\Pricing\Services\IPriceService;
@@ -12,7 +12,7 @@ use Src\Domain\Car\Exceptions\CarNotAvailableException;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Booking\Exceptions\BookingConflictException;
 use Illuminate\Support\Str;
-use Src\Application\Car\DTOs\CarDTO;
+use Src\Application\Car\DTOs\CarProjectionDTO;
 use Src\Application\Shared\Traits\ShouldAppendEvent;
 use Src\Domain\Shared\Repositories\IEventStoreRepository;
 
@@ -44,7 +44,7 @@ class CreateBookingHandler implements ICommandHandler
             );
         }
 
-        if (!$car->isAvailable()) {
+        if (!$car->isAvailable) {
             throw new CarNotAvailableException(
                 trace: ['carId' => $command->carId]
             );
@@ -52,25 +52,26 @@ class CreateBookingHandler implements ICommandHandler
 
         // Validate no booking conflicts
         if ($this->bookingService->isConflictWithOtherBookings(
-            $command->carId,
+            $command->userId,
             $command->startDate,
             $command->endDate
         )) {
             throw new BookingConflictException(
                 trace: [
-                    'carId' => $command->carId,
+                    'userId' => $command->userId,
                     'startDate' => $command->startDate,
                     'endDate' => $command->endDate
                 ]
             );
         }
 
-        $carDTO = new CarDTO(
-            id: $car->getId(),
-            brand: $car->getBrand(),
-            model: $car->getModel(),
-            year: $car->getYear(),
-            pricePerDay: $car->getPricePerDay()
+        $carDTO = new CarProjectionDTO(
+            id: $car->id,
+            brand: $car->brand,
+            model: $car->model,
+            year: $car->year,
+            pricePerDay: $car->pricePerDay,
+            isAvailable: $car->isAvailable
         );
         
         // Calculate total price using PriceService

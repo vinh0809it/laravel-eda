@@ -4,21 +4,30 @@ namespace Src\Infrastructure\Booking\Projections;
 
 use Src\Infrastructure\Booking\Models\Booking;
 use Src\Infrastructure\Shared\Projections\BaseProjection;
-use Illuminate\Database\Eloquent\Collection;
 use Src\Domain\Booking\Projections\IBookingProjection;
 use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Shared\Interfaces\IPaginationResult;
 use Src\Application\Shared\DTOs\PaginationDTO;
+use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Application\Booking\DTOs\BookingProjectionDTO;
+use Src\Domain\Shared\Loggers\IEventProcessLogger;
+use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 
 class BookingProjection extends BaseProjection implements IBookingProjection
 {
-    public function __construct(Booking $model)
-    {
+    public function __construct(
+        Booking $model,
+        private readonly IEventProcessLogger $logger
+    ) {
         parent::__construct($model);
     }
 
     public function onBookingCreated(BookingCreated $event): void
     {
+        if ($this->logger->hasProcessed($event->bookingId, self::class)) {
+            return;
+        }
+
         $this->model->create([
             'id' => $event->bookingId,
             'user_id' => $event->userId,
@@ -26,33 +35,21 @@ class BookingProjection extends BaseProjection implements IBookingProjection
             'start_date' => $event->startDate,
             'end_date' => $event->endDate,
             'total_price' => $event->totalPrice,
-            'status' => $event->status,
+            'status' => BookingStatus::CREATED,
         ]);
+
+        $this->logger->markSuccess($event->bookingId, self::class);
     }
 
-    public function findByUserId(string $userId): Collection
+    public function findByDateRange($startDate, $endDate): array
     {
-        return $this->model->where('user_id', $userId)->get();
-    }
-
-    public function findByCarId(string $carId): Collection
-    {
-        return $this->model->where('car_id', $carId)->get();
-    }
-
-    public function findByStatus(string $status): Collection
-    {
-        return $this->model->where('status', $status)->get();
-    }
-
-    public function findByDateRange($startDate, $endDate): Collection
-    {
-        return $this->model->whereBetween('start_date', [$startDate, $endDate])->get();
-    }
-
-    public function findByUserIdAndDateRange(string $userId, $startDate, $endDate): Collection
-    {
-        return $this->model->where('user_id', $userId)->whereBetween('start_date', [$startDate, $endDate])->get();
+        return $this->model->whereBetween('start_date', [$startDate, $endDate])
+            ->where('status', BookingStatus::CREATED)
+            ->get()
+            ->map(function ($booking) {
+                return BookingProjectionDTO::fromArray($booking->toArray());
+            })
+            ->all();
     }
 
     public function paginate(
@@ -62,9 +59,9 @@ class BookingProjection extends BaseProjection implements IBookingProjection
         string $sortDirection,
         array $filters = []
     ): IPaginationResult {
-        
-        $query = $this->model->newQuery();
 
+        $query = $this->model->newQuery();
+        
         foreach ($filters as $key => $value) {
             if ($value !== null) {
                 $query->where($key, $value);
@@ -75,12 +72,27 @@ class BookingProjection extends BaseProjection implements IBookingProjection
 
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
+        $items = $paginator->getCollection()->map(function ($booking) {
+            return BookingProjectionDTO::fromArray($booking->toArray());
+        })->all();
+
         return new PaginationDTO(
-            items: $paginator->items(),
+            items: $items,
             currentPage: $paginator->currentPage(),
             perPage: $paginator->perPage(),
             total: $paginator->total(),
             lastPage: $paginator->lastPage()
         );
     }
+
+    public function findById(string $bookingId): BookingProjectionDTO
+    {
+        $booking = $this->model->find($bookingId);
+
+        if (!$booking) {
+            throw new BookingNotFoundException(trace: ['bookingId' => $bookingId]);
+        }
+
+        return BookingProjectionDTO::fromArray($booking->toArray());
+    }   
 } 

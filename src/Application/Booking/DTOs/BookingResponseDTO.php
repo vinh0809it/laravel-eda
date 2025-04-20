@@ -2,7 +2,7 @@
 
 namespace Src\Application\Booking\DTOs;
 
-use Src\Domain\Booking\Aggregate\BookingAggregate;
+use Src\Domain\Booking\Aggregates\BookingAggregate;
 
 class BookingResponseDTO
 {

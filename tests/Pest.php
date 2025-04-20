@@ -13,7 +13,7 @@
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature');
+    ->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +41,21 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function mockEventDispatcher()
 {
-    // ..
+    $dispatcher = mock(\Illuminate\Contracts\Events\Dispatcher::class);
+    $dispatcher->shouldReceive('dispatch')->andReturnUsing(function ($event) {
+        return $event;
+    });
+    app()->instance('events', $dispatcher);
+    return $dispatcher;
+}
+
+function generateBookingDates(Faker\Generator $faker, int $days = 5): array {
+    $start = $faker->dateTimeBetween('now', '+1 week');
+    $end = (clone $start)->modify("+{$days} days");
+    return [
+        'start' => $start->format('Y-m-d'),
+        'end' => $end->format('Y-m-d'),
+    ];
 }

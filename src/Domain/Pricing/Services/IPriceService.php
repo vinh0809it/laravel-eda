@@ -2,9 +2,9 @@
 
 namespace Src\Domain\Pricing\Services;
 
-use Src\Application\Car\DTOs\CarDTO;
+use Src\Application\Car\DTOs\CarProjectionDTO;
 
 interface IPriceService
 {
-    public function calculateBookingPrice(CarDTO $car, string $startDate, string $endDate): float;
+    public function calculateBookingPrice(CarProjectionDTO $car, string $startDate, string $endDate): float;
 } 

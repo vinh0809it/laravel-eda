@@ -9,6 +9,4 @@ interface ICarProjection extends IBaseProjection
 {
     public function updateAvailability(string $id, bool $isAvailable);
     public function getAvailableCars(): Collection;
-    public function findByModel(string $model): Collection;
-    public function getAvailableCarsByDateRange($startDate, $endDate): Collection;
 } 

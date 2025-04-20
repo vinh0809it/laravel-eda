@@ -6,46 +6,36 @@ use Src\Infrastructure\Car\Models\Car;
 use Src\Infrastructure\Shared\Projections\BaseProjection;
 use Illuminate\Database\Eloquent\Collection;
 use Src\Domain\Car\Projections\ICarProjection;
+use Src\Domain\Booking\Events\BookingCreated;
+use Src\Domain\Shared\Loggers\IEventProcessLogger;
 
 class CarProjection extends BaseProjection implements ICarProjection
 {
-    public function __construct(Car $model)
-    {
+    public function __construct(
+        Car $model,
+        private readonly IEventProcessLogger $logger
+    ) {
         parent::__construct($model);
     }
 
-    public function updateAvailability(string $id, bool $isAvailable)
+    public function onBookingCreated(BookingCreated $event): void
     {
-        return $this->model->where('id', $id)->update(['is_available' => $isAvailable]);
+        if ($this->logger->hasProcessed($event->bookingId, self::class)) {
+            return;
+        }
+
+        $this->updateAvailability($event->carId, false);
+
+        $this->logger->markSuccess($event->bookingId, self::class);
+    }
+
+    public function updateAvailability(string $id, bool $isAvailable): void
+    {
+        $this->model->where('id', $id)->update(['is_available' => $isAvailable]);
     }
 
     public function getAvailableCars(): Collection
     {
         return $this->model->where('is_available', true)->get();
-    }
-
-    public function findByModel(string $model): Collection
-    {
-        return $this->model->where('model', $model)->get();
-    }
-
-    public function findById(string $id)
-    {
-        return Car::find($id);
-    }
-
-    public function getAll()
-    {
-        return Car::all();
-    }
-
-    public function getAvailableCarsByDateRange($startDate, $endDate): Collection
-    {
-        return $this->model->whereDoesntHave('bookings', function ($query) use ($startDate, $endDate) {
-            $query->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                      ->orWhereBetween('end_date', [$startDate, $endDate]);
-            });
-        })->get();
     }
 }

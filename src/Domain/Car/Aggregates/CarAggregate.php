@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Domain\Car\Aggregate;
+namespace Src\Domain\Car\Aggregates;
 
 class CarAggregate
 {

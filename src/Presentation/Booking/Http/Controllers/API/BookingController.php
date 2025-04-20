@@ -5,13 +5,14 @@ namespace Src\Presentation\Booking\Http\Controllers\API;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Ramsey\Uuid\Guid\Guid;
 use Src\Application\Booking\UseCases\Commands\CreateBookingCommand;
 use Src\Application\Shared\Bus\CommandBus;
 use Src\Application\Shared\Bus\QueryBus;
 use Src\Presentation\Booking\Http\Requests\CreateBookingRequest;
 use Src\Application\Booking\DTOs\BookingResponseDTO;
 use Src\Application\Booking\UseCases\Queries\GetBookingsQuery;
-use Src\Domain\Booking\ValueObjects\BookingId;
+use InvalidArgumentException;
 
 class BookingController extends Controller
 {
@@ -20,14 +21,18 @@ class BookingController extends Controller
         private QueryBus $queryBus,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(?string $bookingId = null): JsonResponse
     {
+        if ($bookingId && !Guid::isValid($bookingId)) {
+            throw new InvalidArgumentException('Invalid booking ID');
+        }
+
         $query = new GetBookingsQuery(
+            bookingId: $bookingId,
             page: request()->input('page', 1),
             perPage: request()->input('per_page', 10),
             sortBy: request()->input('sort_by', 'created_at'),
             sortDirection: request()->input('sort_direction', 'desc'),
-            bookingId: request()->has('booking_id') ? BookingId::fromString(request()->input('booking_id')) : null,
             startDate: request()->input('start_date'),
             endDate: request()->input('end_date'),
             status: request()->input('status'),
@@ -62,6 +67,6 @@ class BookingController extends Controller
 
         return response()->json([
             'data' => $responseDTO->forCreation(),
-        ]);
+        ], 201);
     }
 } 
