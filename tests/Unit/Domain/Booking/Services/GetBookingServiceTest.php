@@ -47,7 +47,7 @@ test('returns paginated bookings with filters', function () {
         lastPage: 1
     );
 
-    $this->projection
+    $this->readRepo
         ->shouldReceive('paginate')
         ->once()
         ->andReturn($expectedPaginationResult);
@@ -83,7 +83,7 @@ test('returns booking by id', function () {
         status: 'created'
     );
 
-    $this->projection->shouldReceive('findById')
+    $this->readRepo->shouldReceive('findById')
         ->with($bookingId)
         ->andReturn($expectedBooking);
 
@@ -99,7 +99,7 @@ test('returns null when booking not found', function () {
     // Arrange
     $bookingId = $this->faker->uuid();
 
-    $this->projection->shouldReceive('findById')
+    $this->readRepo->shouldReceive('findById')
         ->with($bookingId)
         ->andThrow(new BookingNotFoundException(trace: ['bookingId' => $bookingId]));
 

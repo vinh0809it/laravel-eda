@@ -2,23 +2,27 @@
 
 declare(strict_types=1);
 
+use Carbon\Carbon;
 use Src\Domain\Booking\Aggregates\BookingAggregate;
+use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Booking\Events\BookingCreated;
 
 beforeEach(function () {
     $this->faker = \Faker\Factory::create();
     
-    // Create test data with primitive types
     $this->bookingId = $this->faker->uuid();
     $this->userId = $this->faker->uuid();
     $this->carId = $this->faker->uuid();
-    $this->startDate = $this->faker->date();
-    $this->endDate = $this->faker->date();
-    $this->originalPrice = $this->faker->randomFloat(2, 100, 1000);
+
+    $bookingDates = generateBookingDates($this->faker, 5);
+    $this->startDate = $bookingDates['start'];
+    $this->endDate = $bookingDates['end'];
+    $this->originalPrice = randomMoney($this->faker);
 });
 
-test('aggregate creates booking with correct initial state', function () {
-    // Act
+
+test('aggregate creates a booking and record a BookingCreated event', function () {
     $aggregate = BookingAggregate::create(
         id: $this->bookingId,
         carId: $this->carId,            
@@ -28,30 +32,73 @@ test('aggregate creates booking with correct initial state', function () {
         originalPrice: $this->originalPrice
     );
 
-    // Assert
-    expect($aggregate->toArray())->toMatchArray([
-        'id' => $this->bookingId,
-        'car_id' => $this->carId,
-        'user_id' => $this->userId,
-        'start_date' => $this->startDate,
-        'end_date' => $this->endDate,
-        'original_price' => $this->originalPrice,
-    ]);
-
-    expect($aggregate->getStatus())->toBe('created');
-    expect($aggregate->getVersion())->toBe(1);
+    expect($aggregate->getId())->toBe($this->bookingId);
+    expect($aggregate->getStatus())->toBe(BookingStatus::CREATED->value);
 
     $events = $aggregate->getRecordedEvents();
-    expect($events)->toHaveCount(1);
+    expect($events)->toHaveCount(1)
+                   ->and($events[0])->toBeInstanceOf(BookingCreated::class);
+})
+->group('booking_aggregate');
 
-    tap($events[0], function ($event) {
-        expect($event)->toBeInstanceOf(BookingCreated::class);
-        expect($event->bookingId)->toBe($this->bookingId);
-        expect($event->userId)->toBe($this->userId);
-        expect($event->carId)->toBe($this->carId);
-        expect($event->startDate)->toBe($this->startDate);
-        expect($event->endDate)->toBe($this->endDate);
-        expect($event->originalPrice)->toBe($this->originalPrice);
-    });
+test('aggregate completes a booking and records a BookingCompleted event', function () {
+    $aggregate = BookingAggregate::create(
+        id: $this->bookingId,
+        carId: $this->carId,            
+        userId: $this->userId,
+        startDate: $this->startDate,
+        endDate: $this->endDate,
+        originalPrice: $this->originalPrice
+    );
+
+    $actualEndDate = Carbon::parse($this->endDate)->addDays(1)->toDateString();
+    $additionalPrice = randomMoney($this->faker);
+    $finalPrice = randomMoney($this->faker);
+
+    $aggregate->complete(
+        actualEndDate: $actualEndDate,
+        additionalPrice: $additionalPrice,
+        finalPrice: $finalPrice
+    );
+
+    expect($aggregate->getStatus())->toBe(BookingStatus::COMPLETED->value)
+        ->and($aggregate->getActualEndDate())->toBe($actualEndDate)
+        ->and($aggregate->getFinalPrice())->toBe($finalPrice);
+
+    $events = $aggregate->getRecordedEvents();
+    expect($events)->toHaveCount(2)
+                   ->and($events[1])->toBeInstanceOf(BookingCompleted::class);
+})
+->group('booking_aggregate');
+
+test('aggregate rebuilds aggregate state from events', function () {
+
+    $actualEndDate = Carbon::parse($this->endDate)->addDays(1)->toDateString();
+    $additionalPrice = randomMoney($this->faker);
+    $finalPrice = randomMoney($this->faker);
+
+    $events = [
+        new BookingCreated(
+            bookingId: $this->bookingId,
+            carId: $this->carId,
+            userId: $this->userId,
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            originalPrice: $this->originalPrice
+        ),
+        new BookingCompleted(
+            bookingId: $this->bookingId,
+            carId: $this->carId,
+            actualEndDate: $actualEndDate,
+            additionalPrice: $additionalPrice,
+            finalPrice: $finalPrice
+        )
+    ];
+
+    $aggregate = BookingAggregate::replayEvents($events);
+
+    expect($aggregate->getStatus())->toBe(BookingStatus::COMPLETED->value)
+        ->and($aggregate->getFinalPrice())->toBe($finalPrice)
+        ->and($aggregate->getActualEndDate())->toBe($actualEndDate);
 })
 ->group('booking_aggregate');

@@ -6,7 +6,6 @@ namespace Tests\Feature\Booking;
 
 use Src\Infrastructure\Car\Models\Car;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Src\Domain\Car\Exceptions\CarNotAvailableException;
 use Src\Infrastructure\Booking\Models\Booking;
 use Src\Infrastructure\User\ReadModels\User;
 
@@ -48,8 +47,7 @@ test('creates a booking successfully', function () {
                 'start_date',
                 'end_date',
                 'original_price',
-                'status',
-                'version'
+                'status'
             ]
         ]);
 

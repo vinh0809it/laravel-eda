@@ -59,3 +59,7 @@ function generateBookingDates(Faker\Generator $faker, int $days = 5): array {
         'end' => $end->format('Y-m-d'),
     ];
 }
+
+function randomMoney(Faker\Generator $faker, int $from = 100, int $to = 1000): float {
+    return $faker->randomFloat(2, $from, $to);
+}

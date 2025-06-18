@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Booking\Services;
 
+use Src\Application\Booking\DTOs\BookingDTO;
+use Src\Domain\Booking\Enums\BookingStatus;
 use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
 use Src\Domain\Booking\Services\BookingService;
 
@@ -30,11 +32,15 @@ test('BookingService detects conflicts when dates overlap', function () {
                    $endDateArg === $inputEnd;
         })
         ->andReturn([
-            [
+            BookingDTO::fromArray([
+                'id' => $this->faker->uuid(),
+                'car_id' => $this->faker->uuid(),
                 'user_id' => $userId,
                 'start_date' => $existingStart,
                 'end_date' => $existingEnd,
-            ]
+                'original_price' => $this->faker->randomFLoat(2, 100, 1000),
+                'status' => $this->faker->randomElement(BookingStatus::toArray()),
+            ])
         ]);
 
     // Act

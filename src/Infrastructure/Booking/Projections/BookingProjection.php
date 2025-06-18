@@ -34,7 +34,7 @@ class BookingProjection extends BaseProjection implements IBookingProjection
             'start_date' => $event->startDate,
             'end_date' => $event->endDate,
             'original_price' => $event->originalPrice,
-            'status' => BookingStatus::CREATED,
+            'status' => BookingStatus::CREATED->value
         ]);
 
         $this->logger->markSuccess($event->bookingId, $loggerContext);

@@ -18,4 +18,12 @@ enum BookingStatus: string
             self::COMPLETED => 'Completed',
         };
     }
+
+    public static function toArray(): array
+    {
+        return array_map(
+            fn($case) => $case->value,
+            self::cases()
+        );
+    }
 }

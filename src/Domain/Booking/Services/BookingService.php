@@ -20,7 +20,7 @@ class BookingService implements IBookingService
             $startDate,
             $endDate
         );
-       
+
         $conflictingBookings = array_filter($existingBookings, function ($booking) use ($userId) {
             return $booking->userId === $userId;
         });

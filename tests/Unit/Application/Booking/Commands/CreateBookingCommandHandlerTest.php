@@ -16,6 +16,7 @@ use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Booking\Exceptions\BookingConflictException;
 use Src\Application\Car\DTOs\CarProjectionDTO;
 use Src\Application\Shared\Interfaces\ICommand;
+use Src\Domain\Booking\Enums\BookingStatus;
 use Src\Domain\Booking\Events\BookingCreated;
 
 beforeEach(function () {
@@ -83,14 +84,15 @@ test('successfully creates a booking when all conditions are met', function () {
     
     // Act
     $result = $this->handler->handle($this->command);
-    
     // Assert
-    expect($result->getId())->toBeString();
-    expect($result->getCarId())->toBe($this->command->carId);
-    expect($result->getUserId())->toBe($this->command->userId);
-    expect($result->getStartDate())->toBe($this->command->startDate);
-    expect($result->getEndDate())->toBe($this->command->endDate);
-    expect($result->getOriginalPrice())->toBe($originalPrice);
+
+    expect($result['id'])->toBeString();
+    expect($result['car_id'])->toBe($this->command->carId);
+    expect($result['user_id'])->toBe($this->command->userId);
+    expect($result['start_date'])->toBe($this->command->startDate);
+    expect($result['end_date'])->toBe($this->command->endDate);
+    expect($result['original_price'])->toBe($originalPrice);
+    expect($result['status'])->toBe(BookingStatus::CREATED->value);
 
     Event::assertDispatched(BookingCreated::class);
 })

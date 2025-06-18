@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->date('actual_end_date')->nullable();
             $table->decimal('original_price', 10, 2);
-            $table->decimal('final_price', 10, 2);
+            $table->decimal('final_price', 10, 2)->nullable();
             $table->string('status')->default('created'); // created, cancelled, completed
             $table->string('cancellation_reason')->nullable();
             $table->foreignId('cancelled_by')->nullable()->constrained('users');
