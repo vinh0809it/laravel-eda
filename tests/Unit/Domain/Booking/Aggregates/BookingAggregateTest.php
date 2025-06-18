@@ -14,7 +14,7 @@ beforeEach(function () {
     $this->carId = $this->faker->uuid();
     $this->startDate = $this->faker->date();
     $this->endDate = $this->faker->date();
-    $this->totalPrice = $this->faker->randomFloat(2, 100, 1000);
+    $this->originalPrice = $this->faker->randomFloat(2, 100, 1000);
 });
 
 test('aggregate creates booking with correct initial state', function () {
@@ -25,7 +25,7 @@ test('aggregate creates booking with correct initial state', function () {
         userId: $this->userId,
         startDate: $this->startDate,
         endDate: $this->endDate,
-        totalPrice: $this->totalPrice
+        originalPrice: $this->originalPrice
     );
 
     // Assert
@@ -35,7 +35,7 @@ test('aggregate creates booking with correct initial state', function () {
         'user_id' => $this->userId,
         'start_date' => $this->startDate,
         'end_date' => $this->endDate,
-        'total_price' => $this->totalPrice,
+        'original_price' => $this->originalPrice,
     ]);
 
     expect($aggregate->getStatus())->toBe('created');
@@ -51,7 +51,7 @@ test('aggregate creates booking with correct initial state', function () {
         expect($event->carId)->toBe($this->carId);
         expect($event->startDate)->toBe($this->startDate);
         expect($event->endDate)->toBe($this->endDate);
-        expect($event->totalPrice)->toBe($this->totalPrice);
+        expect($event->originalPrice)->toBe($this->originalPrice);
     });
 })
 ->group('booking_aggregate');

@@ -6,12 +6,9 @@ use Src\Infrastructure\Booking\Models\Booking;
 use Src\Infrastructure\Shared\Projections\BaseProjection;
 use Src\Domain\Booking\Projections\IBookingProjection;
 use Src\Domain\Booking\Events\BookingCreated;
-use Src\Domain\Shared\Interfaces\IPaginationResult;
-use Src\Application\Shared\DTOs\PaginationDTO;
+use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Booking\Enums\BookingStatus;
-use Src\Application\Booking\DTOs\BookingProjectionDTO;
 use Src\Domain\Shared\Loggers\IEventProcessLogger;
-use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 
 class BookingProjection extends BaseProjection implements IBookingProjection
 {
@@ -24,7 +21,9 @@ class BookingProjection extends BaseProjection implements IBookingProjection
 
     public function onBookingCreated(BookingCreated $event): void
     {
-        if ($this->logger->hasProcessed($event->bookingId, self::class)) {
+        $loggerContext = self::class . '::onBookingCreated';
+
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
         }
 
@@ -34,65 +33,32 @@ class BookingProjection extends BaseProjection implements IBookingProjection
             'car_id' => $event->carId,  
             'start_date' => $event->startDate,
             'end_date' => $event->endDate,
-            'total_price' => $event->totalPrice,
+            'original_price' => $event->originalPrice,
             'status' => BookingStatus::CREATED,
         ]);
 
-        $this->logger->markSuccess($event->bookingId, self::class);
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
-    public function findByDateRange($startDate, $endDate): array
+    public function onBookingCompleted(BookingCompleted $event): void
     {
-        return $this->model->whereBetween('start_date', [$startDate, $endDate])
-            ->where('status', BookingStatus::CREATED)
-            ->get()
-            ->map(function ($booking) {
-                return BookingProjectionDTO::fromArray($booking->toArray());
-            })
-            ->all();
-    }
+        $loggerContext = self::class . '::onBookingCompleted';
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
+            return;
+        }
 
-    public function paginate(
-        int $page,
-        int $perPage,
-        string $sortBy,
-        string $sortDirection,
-        array $filters = []
-    ): IPaginationResult {
+        $booking = $this->model->find($event->bookingId);
 
-        $query = $this->model->newQuery();
+        if(!$booking) {
+            $this->logger->markFailure($event->bookingId, $loggerContext, 'Booking not found for completion');
+            return;
+        }
         
-        foreach ($filters as $key => $value) {
-            if ($value !== null) {
-                $query->where($key, $value);
-            }
-        }
+        $booking->actual_end_date = $event->actualEndDate;
+        $booking->final_price = $event->finalPrice;
+        $booking->status = BookingStatus::COMPLETED->value;
+        $booking->save();
 
-        $query->orderBy($sortBy, $sortDirection);
-
-        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
-
-        $items = $paginator->getCollection()->map(function ($booking) {
-            return BookingProjectionDTO::fromArray($booking->toArray());
-        })->all();
-
-        return new PaginationDTO(
-            items: $items,
-            currentPage: $paginator->currentPage(),
-            perPage: $paginator->perPage(),
-            total: $paginator->total(),
-            lastPage: $paginator->lastPage()
-        );
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
-
-    public function findById(string $bookingId): BookingProjectionDTO
-    {
-        $booking = $this->model->find($bookingId);
-
-        if (!$booking) {
-            throw new BookingNotFoundException(trace: ['bookingId' => $bookingId]);
-        }
-
-        return BookingProjectionDTO::fromArray($booking->toArray());
-    }   
 } 

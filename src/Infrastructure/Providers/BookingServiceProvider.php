@@ -13,6 +13,10 @@ use Src\Domain\Booking\Projections\IBookingProjection;
 use Src\Infrastructure\Booking\Projections\BookingProjection;
 use Src\Domain\Booking\Services\IBookingService;
 use Src\Domain\Booking\Services\BookingService;
+use Src\Application\Booking\UseCases\Commands\CompleteBookingCommand;
+use Src\Application\Booking\UseCases\Commands\CompleteBookingCommandHandler;
+use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
+use Src\Infrastructure\Booking\ReadRepositories\BookingReadRepository;
 
 class BookingServiceProvider extends ServiceProvider
 {
@@ -25,6 +29,11 @@ class BookingServiceProvider extends ServiceProvider
             $commandBus->register(
                 CreateBookingCommand::class, 
                 $app->make(CreateBookingHandler::class)
+            );
+
+            $commandBus->register(
+                CompleteBookingCommand::class, 
+                $app->make(CompleteBookingCommandHandler::class)
             );
 
             return $commandBus;
@@ -45,6 +54,7 @@ class BookingServiceProvider extends ServiceProvider
         // Bindings
         $this->app->singleton(IBookingService::class, BookingService::class);
         $this->app->singleton(IBookingProjection::class, BookingProjection::class);
+        $this->app->singleton(IBookingReadRepository::class, BookingReadRepository::class);
 
     }
 

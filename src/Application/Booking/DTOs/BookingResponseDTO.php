@@ -12,21 +12,29 @@ class BookingResponseDTO
 
     public function forCreation(): array
     {
-        return $this->booking->toArray();
-    }
-
-    public function forUpdate(): array
-    {
-        return $this->booking->toArray();
-    }
-    
-    public function forCancellation(): array
-    {
-        return $this->booking->toArray();
+        return [
+            'id' => $this->booking->getId(),
+            'car_id' => $this->booking->getCarId(),
+            'user_id' => $this->booking->getUserId(),
+            'start_date' => $this->booking->getStartDate(),
+            'end_date' => $this->booking->getEndDate(),
+            'original_price' => $this->booking->getOriginalPrice(),
+            'status' => $this->booking->getStatus()
+        ];
     }
 
     public function forCompletion(): array
     {
-        return $this->booking->toArray();
+        return [
+            'id' => $this->booking->getId(),
+            'car_id' => $this->booking->getCarId(),
+            'user_id' => $this->booking->getUserId(),
+            'start_date' => $this->booking->getStartDate(),
+            'end_date' => $this->booking->getEndDate(),
+            'actual_end_date' => $this->booking->getActualEndDate(),
+            'original_price' => $this->booking->getOriginalPrice(),
+            'final_price' => $this->booking->getFinalPrice(),
+            'status' => $this->booking->getStatus()
+        ];
     }
 }

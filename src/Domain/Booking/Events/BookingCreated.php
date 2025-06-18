@@ -14,7 +14,7 @@ class BookingCreated implements IDomainEvent
         public readonly string $userId,
         public readonly string $startDate,
         public readonly string $endDate,
-        public readonly float $totalPrice
+        public readonly float $originalPrice
     ) {}
 
     public function getEventType(): string
@@ -40,7 +40,7 @@ class BookingCreated implements IDomainEvent
             'user_id' => $this->userId,
             'start_date' => $this->startDate,
             'end_date' => $this->endDate,
-            'total_price' => $this->totalPrice
+            'original_price' => $this->originalPrice
         ];
     }
 
@@ -52,7 +52,7 @@ class BookingCreated implements IDomainEvent
             userId: $data['user_id'],
             startDate: $data['start_date'],
             endDate: $data['end_date'],
-            totalPrice: $data['total_price']
+            originalPrice: $data['original_price']
         );
     }
 } 

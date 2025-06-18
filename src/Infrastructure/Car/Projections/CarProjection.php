@@ -4,7 +4,7 @@ namespace Src\Infrastructure\Car\Projections;
 
 use Src\Infrastructure\Car\Models\Car;
 use Src\Infrastructure\Shared\Projections\BaseProjection;
-use Illuminate\Database\Eloquent\Collection;
+use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Car\Projections\ICarProjection;
 use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Shared\Loggers\IEventProcessLogger;
@@ -20,22 +20,32 @@ class CarProjection extends BaseProjection implements ICarProjection
 
     public function onBookingCreated(BookingCreated $event): void
     {
-        if ($this->logger->hasProcessed($event->bookingId, self::class)) {
+        $loggerContext = self::class . '::onBookingCreated';
+
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
         }
 
         $this->updateAvailability($event->carId, false);
 
-        $this->logger->markSuccess($event->bookingId, self::class);
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
+    }
+
+    public function onBookingCompleted(BookingCompleted $event): void
+    {
+        $loggerContext = self::class . '::onBookingCreated';
+
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
+            return;
+        }
+
+        $this->updateAvailability($event->carId, true);
+
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
     public function updateAvailability(string $id, bool $isAvailable): void
     {
         $this->model->where('id', $id)->update(['is_available' => $isAvailable]);
-    }
-
-    public function getAvailableCars(): Collection
-    {
-        return $this->model->where('is_available', true)->get();
     }
 }

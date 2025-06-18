@@ -24,7 +24,7 @@ class Booking extends Model
         'user_id',
         'start_date',
         'end_date',
-        'total_price',
+        'original_price',
         'status',
         'version',
     ];
@@ -33,6 +33,6 @@ class Booking extends Model
         'id' => 'string',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
-        'total_price' => 'decimal:2',
+        'original_price' => 'decimal:2',
     ];
 } 

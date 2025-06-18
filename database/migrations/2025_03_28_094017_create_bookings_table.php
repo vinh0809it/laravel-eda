@@ -17,16 +17,17 @@ return new class extends Migration
             $table->foreignUuid('car_id')->constrained('cars');
             $table->date('start_date');
             $table->date('end_date');
-            $table->decimal('total_price', 10, 2);
+            $table->date('actual_end_date')->nullable();
+            $table->decimal('original_price', 10, 2);
+            $table->decimal('final_price', 10, 2);
             $table->string('status')->default('created'); // created, cancelled, completed
             $table->string('cancellation_reason')->nullable();
             $table->foreignId('cancelled_by')->nullable()->constrained('users');
             $table->timestamp('cancelled_at')->nullable();
-            $table->foreignId('completed_by')->nullable()->constrained('users');
             $table->timestamp('completed_at')->nullable();
             $table->text('completion_notes')->nullable();
             $table->timestamps();
-            $table->softDeletes(); // For soft deletes
+            $table->softDeletes(); 
         });
     }
 

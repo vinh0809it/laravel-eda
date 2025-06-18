@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Booking\Services;
 
-use Src\Domain\Booking\Projections\IBookingProjection;
 use Src\Domain\Booking\Services\BookingService;
 use Src\Application\Shared\DTOs\PaginationDTO;
-use Src\Application\Booking\DTOs\BookingProjectionDTO;
+use Src\Application\Booking\DTOs\BookingDTO;
 use Src\Domain\Booking\Exceptions\BookingNotFoundException;
+use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
 
 beforeEach(function () {
     $this->faker = \Faker\Factory::create();
-    $this->projection = mock(IBookingProjection::class);
-    $this->service = new BookingService($this->projection);
+    $this->readRepo = mock(IBookingReadRepository::class);
+    $this->service = new BookingService($this->readRepo);
 });
 
 test('returns paginated bookings with filters', function () {
@@ -29,13 +29,13 @@ test('returns paginated bookings with filters', function () {
         'status' => 'created',
     ];
 
-    $expectedBooking = new BookingProjectionDTO(
+    $expectedBooking = new BookingDTO(
         id: $this->faker->uuid(),
         carId: $filters['car_id'],
         userId: $filters['user_id'],
         startDate: now()->format('Y-m-d H:i:s'),
         endDate: now()->addDays(5)->format('Y-m-d H:i:s'),
-        totalPrice: 500.00,
+        originalPrice: 500.00,
         status: $filters['status']
     );
 
@@ -73,13 +73,13 @@ test('returns paginated bookings with filters', function () {
 test('returns booking by id', function () {
     // Arrange
     $bookingId = $this->faker->uuid();
-    $expectedBooking = new BookingProjectionDTO(
+    $expectedBooking = new BookingDTO(
         id: $bookingId,
         carId: $this->faker->uuid(),
         userId: $this->faker->uuid(),
         startDate: now()->format('Y-m-d H:i:s'),
         endDate: now()->addDays(5)->format('Y-m-d H:i:s'),
-        totalPrice: 500.00,
+        originalPrice: 500.00,
         status: 'created'
     );
 

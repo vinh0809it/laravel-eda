@@ -57,7 +57,7 @@ beforeEach(function () {
 
 test('successfully creates a booking when all conditions are met', function () {
     // Arrange
-    $totalPrice = $this->faker->randomFloat(2, 100, 1000);
+    $originalPrice = $this->faker->randomFloat(2, 100, 1000);
     
     // Mock car service to return car
     $this->carService
@@ -74,7 +74,7 @@ test('successfully creates a booking when all conditions are met', function () {
     // Mock price calculation
     $this->priceService
         ->shouldReceive('calculateBookingPrice')
-        ->andReturn($totalPrice);
+        ->andReturn($originalPrice);
     
     // Mock event store
     $this->eventStore
@@ -90,7 +90,7 @@ test('successfully creates a booking when all conditions are met', function () {
     expect($result->getUserId())->toBe($this->command->userId);
     expect($result->getStartDate())->toBe($this->command->startDate);
     expect($result->getEndDate())->toBe($this->command->endDate);
-    expect($result->getTotalPrice())->toBe($totalPrice);
+    expect($result->getOriginalPrice())->toBe($originalPrice);
 
     Event::assertDispatched(BookingCreated::class);
 })
@@ -161,7 +161,7 @@ test('validates command type', function () {
 
 test('persists booking event to event store', function () {
     // Arrange
-    $totalPrice = $this->faker->randomFloat(2, 100, 1000);
+    $originalPrice = $this->faker->randomFloat(2, 100, 1000);
     
     $this->carService
         ->shouldReceive('findCarById')
@@ -174,7 +174,7 @@ test('persists booking event to event store', function () {
     
     $this->priceService
         ->shouldReceive('calculateBookingPrice')
-        ->andReturn($totalPrice);
+        ->andReturn($originalPrice);
     
     // Assert event store is called
     $this->eventStore

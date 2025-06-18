@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Src\Domain\Booking\Services;
 
 use Src\Domain\Shared\Interfaces\IPaginationResult;
-use Src\Application\Booking\DTOs\BookingProjectionDTO;
+use Src\Application\Booking\DTOs\BookingDTO;
 
 interface IBookingService
 {
@@ -19,5 +19,5 @@ interface IBookingService
         array $filters = []
     ): IPaginationResult;
 
-    public function getBookingById(string $bookingId): BookingProjectionDTO;
+    public function getBookingById(string $bookingId): BookingDTO;
 }

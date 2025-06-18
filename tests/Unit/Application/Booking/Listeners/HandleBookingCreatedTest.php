@@ -21,7 +21,7 @@ test('listener logs booking creation event', function () {
         carId: $this->faker->uuid(),
         startDate: $this->faker->date(),
         endDate: $this->faker->date(),
-        totalPrice: $this->faker->randomFloat(2, 100, 1000)
+        originalPrice: $this->faker->randomFloat(2, 100, 1000)
     );
 
     // Assert log will be called
@@ -31,7 +31,7 @@ test('listener logs booking creation event', function () {
             'booking_id' => $event->bookingId,
             'user_id' => $event->userId,
             'car_id' => $event->carId,
-            'total_price' => $event->totalPrice,
+            'original_price' => $event->originalPrice,
         ]);
 
     // Act

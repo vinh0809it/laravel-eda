@@ -6,7 +6,7 @@ use Illuminate\Bus\Dispatcher;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Src\Application\Booking\Commands\CreateBookingCommand;
+use Src\Application\Booking\UseCases\Commands\CreateBookingCommand;
 use Src\Presentation\Booking\Http\Requests\CreateBookingRequest;
 
 class BookingController extends Controller
@@ -32,7 +32,7 @@ class BookingController extends Controller
                 'car_id' => $booking->getCarId(),
                 'start_date' => $booking->getStartDate(),
                 'end_date' => $booking->getEndDate(),
-                'total_price' => $booking->getTotalPrice(),
+                'original_price' => $booking->getOriginalPrice(),
                 'status' => $booking->getStatus(),
             ],
         ]);

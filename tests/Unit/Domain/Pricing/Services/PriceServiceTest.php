@@ -20,7 +20,7 @@ test('calculates booking price correctly', function () {
 
     ['start' => $startDate, 'end' => $endDate] = generateBookingDates($this->faker, 5);
 
-    $expectedTotalPrice = $dailyPrice * 5;
+    $expectedOriginalPrice = $dailyPrice * 5;
 
     $car = new CarProjectionDTO(
         id: $this->faker->uuid(),
@@ -34,13 +34,13 @@ test('calculates booking price correctly', function () {
     $this->priceCalculator
         ->shouldReceive('calculateUsagePrice')
         ->once()
-        ->andReturn($expectedTotalPrice);
+        ->andReturn($expectedOriginalPrice);
 
     // Act
     $result = $this->service->calculateBookingPrice($car, $startDate, $endDate);
 
     // Assert
-    expect($result)->toBe($expectedTotalPrice);
+    expect($result)->toBe($expectedOriginalPrice);
 })
 ->group('price_service');
 
@@ -50,7 +50,7 @@ test('handles single day booking', function () {
 
     ['start' => $startDate, 'end' => $endDate] = generateBookingDates($this->faker, 1);
     
-    $expectedTotalPrice = $dailyPrice;
+    $expectedOriginalPrice = $dailyPrice;
 
     $car = new CarProjectionDTO(
         id: $this->faker->uuid(),
@@ -64,12 +64,12 @@ test('handles single day booking', function () {
     $this->priceCalculator
         ->shouldReceive('calculateUsagePrice')
         ->once()
-        ->andReturn($expectedTotalPrice);
+        ->andReturn($expectedOriginalPrice);
 
     // Act
     $result = $this->service->calculateBookingPrice($car, $startDate, $endDate);
 
     // Assert
-    expect($result)->toBe($expectedTotalPrice);
+    expect($result)->toBe($expectedOriginalPrice);
 })
 ->group('price_service');

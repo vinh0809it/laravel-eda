@@ -13,7 +13,7 @@ class BookingCreatedListener
             'booking_id' => $event->bookingId,
             'user_id' => $event->userId,
             'car_id' => $event->carId,
-            'total_price' => $event->totalPrice,
+            'original_price' => $event->originalPrice,
         ]);
 
         // Here you can add more side effects:

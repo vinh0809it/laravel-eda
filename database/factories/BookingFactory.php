@@ -30,7 +30,7 @@ class BookingFactory extends Factory
             'user_id' => fake()->uuid(),
             'start_date' => fake()->date(),
             'end_date' => fake()->date(),
-            'total_price' => fake()->randomFloat(2, 100, 1000),
+            'original_price' => fake()->randomFloat(2, 100, 1000),
             'status' => fake()->randomElement(['created', 'confirmed', 'cancelled']),
         ];
     }

@@ -2,7 +2,7 @@
 
 namespace Src\Application\Booking\DTOs;
 
-class BookingProjectionDTO
+class BookingDTO
 {
     public function __construct(
         public string $id,
@@ -10,7 +10,7 @@ class BookingProjectionDTO
         public string $userId,
         public string $startDate,
         public string $endDate,
-        public float $totalPrice,
+        public float $originalPrice,
         public string $status,
     ) {}
 
@@ -22,7 +22,7 @@ class BookingProjectionDTO
             'userId' => $this->userId,
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
-            'totalPrice' => $this->totalPrice,
+            'originalPrice' => $this->originalPrice,
             'status' => $this->status,
         ];
     }
@@ -35,7 +35,7 @@ class BookingProjectionDTO
             userId: $data['user_id'],
             startDate: $data['start_date'],
             endDate: $data['end_date'],
-            totalPrice: $data['total_price'],
+            originalPrice: $data['original_price'],
             status: $data['status'],
         );
     }

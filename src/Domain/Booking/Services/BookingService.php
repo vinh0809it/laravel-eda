@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Src\Domain\Booking\Services;
 
 use Src\Domain\Shared\Interfaces\IPaginationResult;
-use Src\Domain\Booking\Projections\IBookingProjection;
-use Src\Application\Booking\DTOs\BookingProjectionDTO;
+use Src\Application\Booking\DTOs\BookingDTO;
+use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
 
 class BookingService implements IBookingService
 {
     public function __construct(
-        private readonly IBookingProjection $bookingProjection
+        private readonly IBookingReadRepository $bookingReadRepository
     ) {}
 
     public function isConflictWithOtherBookings(string $userId, string $startDate, string $endDate): bool
     {
-        $existingBookings = $this->bookingProjection->findByDateRange(
+        $existingBookings = $this->bookingReadRepository->findByDateRange(
             $startDate,
             $endDate
         );
@@ -36,7 +36,7 @@ class BookingService implements IBookingService
         array $filters = []
     ): IPaginationResult {
 
-        $paginatedResult = $this->bookingProjection->paginate(
+        $paginatedResult = $this->bookingReadRepository->paginate(
             page: $page,
             perPage: $perPage,
             sortBy: $sortBy,
@@ -47,8 +47,8 @@ class BookingService implements IBookingService
         return $paginatedResult;
     }
 
-    public function getBookingById(string $bookingId): BookingProjectionDTO
+    public function getBookingById(string $bookingId): BookingDTO
     {
-        return $this->bookingProjection->findById($bookingId);
+        return $this->bookingReadRepository->findById($bookingId);
     }   
 }

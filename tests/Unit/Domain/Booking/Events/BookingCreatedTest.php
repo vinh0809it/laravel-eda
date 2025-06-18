@@ -16,7 +16,7 @@ test('BookingCreated event has correct event type and aggregate type', function 
         userId: $this->faker->uuid(),
         startDate: $this->faker->date(),
         endDate: $this->faker->date(),
-        totalPrice: $this->faker->randomFloat(2, 100, 1000)
+        originalPrice: $this->faker->randomFloat(2, 100, 1000)
     );
 
     // Assert
@@ -33,7 +33,7 @@ test('BookingCreated event contains all required data', function () {
     $userId = $this->faker->uuid();
     $startDate = $this->faker->date();
     $endDate = $this->faker->date();
-    $totalPrice = $this->faker->randomFloat(2, 100, 1000);
+    $originalPrice = $this->faker->randomFloat(2, 100, 1000);
 
     // Act
     $event = new BookingCreated(
@@ -42,7 +42,7 @@ test('BookingCreated event contains all required data', function () {
         userId: $userId,
         startDate: $startDate,
         endDate: $endDate,
-        totalPrice: $totalPrice
+        originalPrice: $originalPrice
     );
 
     // Assert
@@ -51,7 +51,7 @@ test('BookingCreated event contains all required data', function () {
     expect($event->userId)->toBe($userId);
     expect($event->startDate)->toBe($startDate);
     expect($event->endDate)->toBe($endDate);
-    expect($event->totalPrice)->toBe($totalPrice);
+    expect($event->originalPrice)->toBe($originalPrice);
 })
 ->group('create_booking_event');
 
@@ -63,7 +63,7 @@ test('BookingCreated event can be serialized and deserialized', function () {
         userId: $this->faker->uuid(),
         startDate: $this->faker->date(),
         endDate: $this->faker->date(),
-        totalPrice: $this->faker->randomFloat(2, 100, 1000)
+        originalPrice: $this->faker->randomFloat(2, 100, 1000)
     );
 
     // Act
@@ -76,6 +76,6 @@ test('BookingCreated event can be serialized and deserialized', function () {
     expect($deserialized->userId)->toBe($event->userId);
     expect($deserialized->startDate)->toBe($event->startDate);
     expect($deserialized->endDate)->toBe($event->endDate);
-    expect($deserialized->totalPrice)->toBe($event->totalPrice);
+    expect($deserialized->originalPrice)->toBe($event->originalPrice);
 })
 ->group('create_booking_event');

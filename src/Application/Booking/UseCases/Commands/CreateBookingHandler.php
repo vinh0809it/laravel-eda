@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Src\Application\Car\DTOs\CarProjectionDTO;
 use Src\Application\Shared\Traits\ShouldAppendEvent;
 use Src\Domain\Shared\Repositories\IEventStoreRepository;
+use Src\Application\Booking\DTOs\BookingResponseDTO;
 
 class CreateBookingHandler implements ICommandHandler
 {
@@ -74,8 +75,8 @@ class CreateBookingHandler implements ICommandHandler
             isAvailable: $car->isAvailable
         );
         
-        // Calculate total price using PriceService
-        $totalPrice = $this->priceService->calculateBookingPrice(
+        // Calculate original price using PriceService
+        $originalPrice = $this->priceService->calculateBookingPrice(
             $carDTO, 
             $command->startDate, 
             $command->endDate
@@ -90,13 +91,14 @@ class CreateBookingHandler implements ICommandHandler
             userId: $command->userId,
             startDate: $command->startDate,
             endDate: $command->endDate,
-            totalPrice: $totalPrice
+            originalPrice: $originalPrice
         );
 
         // Store event in event store
         $this->persistAggregate($booking);
         
-        // Return booking aggregate
-        return $booking;
+        // Return booking response DTO
+        $responseDTO = new BookingResponseDTO($booking);
+        return $responseDTO->forCreation();
     }
 }

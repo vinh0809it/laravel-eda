@@ -10,11 +10,12 @@ use Src\Application\Booking\UseCases\Commands\CreateBookingCommand;
 use Src\Application\Shared\Bus\CommandBus;
 use Src\Application\Shared\Bus\QueryBus;
 use Src\Presentation\Booking\Http\Requests\CreateBookingRequest;
-use Src\Application\Booking\DTOs\BookingResponseDTO;
 use Src\Application\Booking\UseCases\Queries\GetBookingsQuery;
 use InvalidArgumentException;
+use Src\Application\Booking\UseCases\Commands\CompleteBookingCommand;
+use Carbon\Carbon;
 
-class BookingController extends Controller
+final class BookingController extends Controller
 {
     public function __construct(
         private CommandBus $commandBus,
@@ -51,6 +52,22 @@ class BookingController extends Controller
             ],
         ]);
     }
+    public function complete(string $bookingId): JsonResponse
+    {
+        if (!Guid::isValid($bookingId)) {
+            throw new InvalidArgumentException('Invalid booking ID');
+        }
+
+        $command = new CompleteBookingCommand(
+            bookingId: $bookingId
+        );
+
+        $response = $this->commandBus->dispatch($command);
+
+        return response()->json([
+            'data' => $response
+        ]);
+    }
 
     public function store(CreateBookingRequest $request): JsonResponse
     {
@@ -61,12 +78,10 @@ class BookingController extends Controller
             endDate: $request->end_date,
         );
 
-        $booking = $this->commandBus->dispatch($command);
+        $response = $this->commandBus->dispatch($command);
         
-        $responseDTO = new BookingResponseDTO($booking);
-
         return response()->json([
-            'data' => $responseDTO->forCreation(),
+            'data' => $response
         ], 201);
     }
 } 

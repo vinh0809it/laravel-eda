@@ -5,6 +5,7 @@ namespace Src\Domain\Pricing\Services;
 use Src\Domain\Pricing\Contracts\IPriceCalculator;
 use Src\Domain\Pricing\ValueObjects\Price;
 use Src\Application\Car\DTOs\CarProjectionDTO;
+use Src\Application\Pricing\DTOs\AdditionalPriceCalculationDTO;
 
 class PriceService implements IPriceService
 {
@@ -16,6 +17,26 @@ class PriceService implements IPriceService
     {
         $dailyPrice = $car->pricePerDay;
         $price = new Price($dailyPrice);
-        return $this->priceCalculator->calculateUsagePrice($price, $startDate, $endDate);
+        return $this->priceCalculator->calculateUsagePrice(
+            $price, 
+            $startDate, 
+            $endDate
+        );
     }
-}   
+
+    public function calculateAdditionalPrice(AdditionalPriceCalculationDTO $additionalPriceCalculationDTO): float
+    {
+        $dailyPrice = $additionalPriceCalculationDTO->pricePerDay;
+        $price = new Price($dailyPrice);
+        return $this->priceCalculator->calculateUsagePrice(
+            $price, 
+            $additionalPriceCalculationDTO->endDate, 
+            $additionalPriceCalculationDTO->actualEndDate
+        );
+    }
+
+    public function calculateFinalPrice(float $bookingPrice, float $additionalPrice): float
+    {
+        return $bookingPrice + $additionalPrice;
+    }
+}

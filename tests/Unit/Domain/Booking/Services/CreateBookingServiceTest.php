@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Booking\Services;
 
-use Src\Domain\Booking\Projections\IBookingProjection;
+use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
 use Src\Domain\Booking\Services\BookingService;
 
 
 beforeEach(function () {
     $this->faker = \Faker\Factory::create();
-    $this->projection = mock(IBookingProjection::class);
-    $this->service = new BookingService($this->projection);
+    $this->readRepo = mock(IBookingReadRepository::class);
+    $this->service = new BookingService($this->readRepo);
 });
 
 
@@ -24,7 +24,7 @@ test('BookingService detects conflicts when dates overlap', function () {
     $existingEnd = $this->faker->date($existingStart);
 
     // Mock existing bookings that overlap
-    $this->projection->shouldReceive('findByDateRange')
+    $this->readRepo->shouldReceive('findByDateRange')
         ->withArgs(function ($startDateArg, $endDateArg) use ($inputStart, $inputEnd) {
             return $startDateArg === $inputStart &&
                    $endDateArg === $inputEnd;
@@ -56,7 +56,7 @@ test('BookingService returns no conflict when dates do not overlap', function ()
     $inputEnd = $this->faker->date($inputStart);
 
     // Mock existing bookings that don't overlap
-    $this->projection->shouldReceive('findByDateRange')
+    $this->readRepo->shouldReceive('findByDateRange')
         ->withArgs(function ($startDateArg, $endDateArg) use ($inputStart, $inputEnd) {
             return $startDateArg === $inputStart &&
                    $endDateArg === $inputEnd;

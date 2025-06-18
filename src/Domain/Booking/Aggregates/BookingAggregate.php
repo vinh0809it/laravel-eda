@@ -3,21 +3,25 @@
 namespace Src\Domain\Booking\Aggregates;
 
 use Src\Domain\Booking\Events\BookingCreated;
+use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Shared\Aggregate\AggregateRoot;
+use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Shared\Events\IDomainEvent;
+use Src\Domain\Shared\Exceptions\BussinessException;
 
 class BookingAggregate extends AggregateRoot
 {
-    public string $aggregateType = 'Booking';
+    public const AGGREGATE_TYPE = 'Booking';
 
-    public function __construct(
-        private readonly string $id,
-        private readonly string $carId,
-        private readonly string $userId,
-        private readonly string $startDate,
-        private readonly string $endDate,
-        private readonly float $totalPrice,
-        private readonly string $status,
-    ) {}
+    private string $id;
+    private string $carId;
+    private string $userId;
+    private string $startDate;
+    private string $endDate;
+    private string $actualEndDate;
+    private float $originalPrice;
+    private float $finalPrice;
+    private string $status;
 
     public static function create(
         string $id,
@@ -25,17 +29,9 @@ class BookingAggregate extends AggregateRoot
         string $userId,
         string $startDate,
         string $endDate,
-        float $totalPrice
+        float $originalPrice
     ): self {
-        $booking = new self(
-            id: $id,
-            carId: $carId,
-            userId: $userId,
-            startDate: $startDate,
-            endDate: $endDate,
-            totalPrice: $totalPrice,
-            status: 'created',
-        );
+        $booking = new self();
 
         // Create event
         $event = new BookingCreated(
@@ -44,15 +40,68 @@ class BookingAggregate extends AggregateRoot
             userId: $userId,
             startDate: $startDate,
             endDate: $endDate,
-            totalPrice: $totalPrice
+            originalPrice: $originalPrice
         );
 
         $booking->recordEvent($event);
+        $booking->apply($event);
 
-        $booking->incrementVersion(); 
         return $booking;
     }
 
+    public function complete(string $actualEndDate, float $additionalPrice, float $finalPrice): void
+    {
+        if ($this->status === BookingStatus::COMPLETED->value) {
+            throw new BussinessException(
+                message: 'Booking is already completed!',
+                code: 409
+            );
+        }
+
+        $event = new BookingCompleted(
+            bookingId: $this->id,
+            carId: $this->carId,
+            actualEndDate: $actualEndDate,
+            additionalPrice: $additionalPrice,
+            finalPrice: $finalPrice
+        );
+
+        $this->recordEvent($event);
+        $this->apply($event);
+    }
+
+    public static function replayEvents(array $events): self
+    {
+        $aggregate = new self();
+
+        foreach ($events as $event) {
+            $aggregate->apply($event);
+        }
+
+        return $aggregate;
+    }
+
+    public function apply(IDomainEvent $event): void
+    {   
+        if ($event instanceof BookingCreated) {
+            $this->id = $event->bookingId;
+            $this->carId = $event->carId;
+            $this->userId = $event->userId;
+            $this->startDate = $event->startDate;
+            $this->endDate = $event->endDate;
+            $this->originalPrice = $event->originalPrice;
+            $this->status = BookingStatus::CREATED->value;
+
+        }else if ($event instanceof BookingCompleted) {
+            $this->actualEndDate = $event->actualEndDate;
+            $this->finalPrice = $event->finalPrice;
+            $this->status = BookingStatus::COMPLETED->value;
+
+        }
+
+        $this->incrementVersion();
+    }
+    
     public function getId(): string
     {
         return $this->id;
@@ -78,9 +127,19 @@ class BookingAggregate extends AggregateRoot
         return $this->endDate;
     }
 
-    public function getTotalPrice(): float
+    public function getActualEndDate(): string
     {
-        return $this->totalPrice;
+        return $this->actualEndDate;
+    }
+
+    public function getOriginalPrice(): float
+    {
+        return $this->originalPrice;
+    }
+
+    public function getFinalPrice(): float
+    {
+        return $this->finalPrice;
     }
 
     public function getStatus(): string
@@ -93,29 +152,8 @@ class BookingAggregate extends AggregateRoot
         return $this->version;
     }
 
-    public function toArray(): array
+    public function getAggregateType(): string
     {
-        return [
-            'id' => $this->id,
-            'car_id' => $this->carId,
-            'user_id' => $this->userId,
-            'start_date' => $this->startDate,
-            'end_date' => $this->endDate,
-            'total_price' => $this->totalPrice,
-            'status' => $this->status,
-            'version' => $this->version,
-        ];
-    }
-
-    public function toEventData(): array
-    {
-        return [
-            'id' => $this->id,
-            'car_id' => $this->carId,
-            'user_id' => $this->userId,
-            'start_date' => $this->startDate,
-            'end_date' => $this->endDate,
-            'total_price' => $this->totalPrice,
-        ];
+        return self::AGGREGATE_TYPE;
     }
 } 

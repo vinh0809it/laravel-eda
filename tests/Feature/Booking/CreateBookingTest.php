@@ -47,7 +47,7 @@ test('creates a booking successfully', function () {
                 'user_id',
                 'start_date',
                 'end_date',
-                'total_price',
+                'original_price',
                 'status',
                 'version'
             ]
@@ -59,7 +59,7 @@ test('creates a booking successfully', function () {
         'user_id' => $this->user->id,
         'start_date' => $startDate,
         'end_date' => $endDate,
-        'total_price' => 500.00,
+        'original_price' => 500.00,
         'status' => 'created'
     ]);
 

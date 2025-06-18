@@ -50,18 +50,6 @@ class CarAggregate
         ];
     }
 
-    public function toEventData(): array
-    {
-        return [
-            'id' => $this->id,
-            'brand' => $this->brand,
-            'model' => $this->model,
-            'year' => $this->year,
-            'price_per_day' => $this->pricePerDay,
-            'is_available' => $this->isAvailable,
-        ];
-    }
-
     public function isAvailable(): bool
     {
         return $this->isAvailable;

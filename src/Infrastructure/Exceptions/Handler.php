@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Src\Domain\Shared\Exceptions\BussinessException;
+use Illuminate\Auth\AuthenticationException;
 
 class Handler extends ExceptionHandler
 {
@@ -49,7 +50,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
-        if (str_starts_with($request->route()->getPrefix(), 'api')) {
+        if (str_starts_with($request->route()?->getPrefix(), 'api')) {
             return $this->handleApiException($e);
         }
 
@@ -81,6 +82,10 @@ class Handler extends ExceptionHandler
         }else if ($e instanceof InvalidArgumentException) {
             $statusCode = 422;
             $errorCode = 'INVALID_ARGUMENT';
+            $message = $e->getMessage();
+        }else if ($e instanceof AuthenticationException) {
+            $statusCode = 401;
+            $errorCode = 'UNAUTHORIZED';
             $message = $e->getMessage();
         }else {
             Log::error('Unexpected error occurred', [

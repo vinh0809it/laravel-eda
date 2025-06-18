@@ -7,9 +7,8 @@ abstract class AggregateRoot
     protected int $version = 0;
     protected array $recordedEvents = [];
 
-    public string $aggregateType;
-
     abstract public function getId(): string;
+    abstract public function getAggregateType(): string;
 
     public function getVersion(): int
     {
