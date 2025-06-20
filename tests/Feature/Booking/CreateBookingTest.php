@@ -17,7 +17,6 @@ beforeEach(function () {
     $this->car = Car::factory()->create([
         'price_per_day' => 100.00
     ]);
-
     
     $this->token = $this->user->createToken('test-token')->plainTextToken;
 });

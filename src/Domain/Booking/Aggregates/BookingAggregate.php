@@ -2,10 +2,12 @@
 
 namespace Src\Domain\Booking\Aggregates;
 
+use Carbon\Carbon;
 use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Shared\Aggregate\AggregateRoot;
 use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Shared\Enums\HttpStatusCode;
 use Src\Domain\Shared\Events\IDomainEvent;
 use Src\Domain\Shared\Exceptions\BussinessException;
 
@@ -49,19 +51,19 @@ class BookingAggregate extends AggregateRoot
         return $booking;
     }
 
-    public function complete(string $actualEndDate, float $additionalPrice, float $finalPrice): void
+    public function complete(Carbon $actualEndDate, float $additionalPrice, float $finalPrice): void
     {
         if ($this->status === BookingStatus::COMPLETED->value) {
             throw new BussinessException(
                 message: 'Booking is already completed!',
-                code: 409
+                code: HttpStatusCode::CONFLICT->value
             );
         }
 
         $event = new BookingCompleted(
             bookingId: $this->id,
             carId: $this->carId,
-            actualEndDate: $actualEndDate,
+            actualEndDate: $actualEndDate->format('Y-m-d'),
             additionalPrice: $additionalPrice,
             finalPrice: $finalPrice
         );
@@ -93,6 +95,7 @@ class BookingAggregate extends AggregateRoot
             $this->status = BookingStatus::CREATED->value;
 
         }else if ($event instanceof BookingCompleted) {
+
             $this->actualEndDate = $event->actualEndDate;
             $this->finalPrice = $event->finalPrice;
             $this->status = BookingStatus::COMPLETED->value;
@@ -156,4 +159,4 @@ class BookingAggregate extends AggregateRoot
     {
         return self::AGGREGATE_TYPE;
     }
-} 
+}

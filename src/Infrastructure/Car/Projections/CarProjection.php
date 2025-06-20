@@ -33,7 +33,7 @@ class CarProjection extends BaseProjection implements ICarProjection
 
     public function onBookingCompleted(BookingCompleted $event): void
     {
-        $loggerContext = self::class . '::onBookingCreated';
+        $loggerContext = self::class . '::onBookingCompleted';
 
         if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;

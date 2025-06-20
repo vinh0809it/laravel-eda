@@ -7,8 +7,6 @@ namespace Src\Application\Booking\UseCases\Commands;
 use Carbon\Carbon;
 use Src\Domain\Booking\Aggregates\BookingAggregate;
 use Src\Domain\Booking\Services\IBookingService;
-use Src\Domain\Shared\Repositories\IEventStoreRepository;
-use Src\Application\Shared\Traits\ShouldAppendEvent;
 use Src\Domain\Car\Services\ICarService;
 use Src\Domain\Pricing\Services\IPriceService;
 use Src\Application\Shared\Interfaces\ICommand;
@@ -17,19 +15,16 @@ use Src\Application\Booking\DTOs\BookingResponseDTO;
 use Src\Application\Pricing\DTOs\AdditionalPriceCalculationDTO;
 use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
+use Src\Domain\Shared\Services\IEventSourcingService;
 
 final class CompleteBookingCommandHandler implements ICommandHandler
 {
-    use ShouldAppendEvent;
-
     public function __construct(
-        IEventStoreRepository $eventStore,
+        private readonly IEventSourcingService $eventSourcingService,
         private readonly IBookingService $bookingService,
         private readonly ICarService $carService,
         private readonly IPriceService $priceService
-    ) {
-        $this->setEventStore($eventStore);
-    }
+    ) {}
 
     public function handle(ICommand $command): mixed
     {
@@ -37,7 +32,7 @@ final class CompleteBookingCommandHandler implements ICommandHandler
             throw new \InvalidArgumentException('Command must be an instance of CompleteBookingCommand');
         }
 
-        $events = $this->loadEventStore(
+        $events = $this->eventSourcingService->getEvents(
             aggregateType: BookingAggregate::AGGREGATE_TYPE,
             aggregateId: $command->bookingId
         );
@@ -73,19 +68,20 @@ final class CompleteBookingCommandHandler implements ICommandHandler
             $additionalPriceCalculationDTO
         );
 
-        $finalPrice = $this->priceService->calculateAdditionalPrice(
-            $additionalPriceCalculationDTO
+        $finalPrice = $this->priceService->calculateFinalPrice(
+            bookingPrice: $booking->getOriginalPrice(),
+            additionalPrice: $additionalPrice
         );
 
         // Complete the booking
         $booking->complete(
-            actualEndDate: $actualEndDate->format('Y-m-d'),
+            actualEndDate: $actualEndDate,
             additionalPrice: $additionalPrice,
             finalPrice: $finalPrice
         );
 
         // Store event in event store
-        $this->persistAggregate($booking);
+        $this->eventSourcingService->save($booking);
 
         $responseDTO = new BookingResponseDTO($booking);
         return $responseDTO->forCompletion();

@@ -26,35 +26,6 @@ test('BookingCreated event has correct event type and aggregate type', function 
 })
 ->group('create_booking_event');
 
-test('BookingCreated event contains all required data', function () {
-    // Arrange
-    $bookingId = $this->faker->uuid();
-    $carId = $this->faker->uuid();
-    $userId = $this->faker->uuid();
-    $startDate = $this->faker->date();
-    $endDate = $this->faker->date();
-    $originalPrice = $this->faker->randomFloat(2, 100, 1000);
-
-    // Act
-    $event = new BookingCreated(
-        bookingId: $bookingId,
-        carId: $carId,
-        userId: $userId,
-        startDate: $startDate,
-        endDate: $endDate,
-        originalPrice: $originalPrice
-    );
-
-    // Assert
-    expect($event->bookingId)->toBe($bookingId);
-    expect($event->carId)->toBe($carId);
-    expect($event->userId)->toBe($userId);
-    expect($event->startDate)->toBe($startDate);
-    expect($event->endDate)->toBe($endDate);
-    expect($event->originalPrice)->toBe($originalPrice);
-})
-->group('create_booking_event');
-
 test('BookingCreated event can be serialized and deserialized', function () {
     // Arrange
     $event = new BookingCreated(

@@ -11,6 +11,7 @@ class BookingCompletedListener
     {
         Log::info('Booking completed', [
             'booking_id' => $event->bookingId,
+            'car_id' => $event->carId,
             'actual_end_date' => $event->actualEndDate,
             'additional_price' => $event->additionalPrice,
             'final_price' => $event->finalPrice

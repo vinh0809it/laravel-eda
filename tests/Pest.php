@@ -11,6 +11,8 @@
 |
 */
 
+use Illuminate\Testing\TestResponse;
+
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature', 'Unit');
@@ -62,4 +64,17 @@ function generateBookingDates(Faker\Generator $faker, int $days = 5): array {
 
 function randomMoney(Faker\Generator $faker, int $from = 100, int $to = 1000): float {
     return $faker->randomFloat(2, $from, $to);
+}
+
+function assertErrorResponse(TestResponse $response, ?string $errorCode, ?string $msg, int $httpStatusCode = 500) {
+    
+    $response->assertStatus($httpStatusCode)
+            ->assertJsonStructure([
+                'error_code',
+                'msg'
+            ])
+            ->assertJson([
+                'error_code' => $errorCode,
+                'msg' => $msg
+            ]);
 }

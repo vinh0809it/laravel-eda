@@ -13,22 +13,17 @@ use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Booking\Exceptions\BookingConflictException;
 use Illuminate\Support\Str;
 use Src\Application\Car\DTOs\CarProjectionDTO;
-use Src\Application\Shared\Traits\ShouldAppendEvent;
-use Src\Domain\Shared\Repositories\IEventStoreRepository;
 use Src\Application\Booking\DTOs\BookingResponseDTO;
+use Src\Domain\Shared\Services\IEventSourcingService;
 
-class CreateBookingHandler implements ICommandHandler
+class CreateBookingCommandHandler implements ICommandHandler
 {
-    use ShouldAppendEvent;
-
     public function __construct(
-        IEventStoreRepository $eventStore,
+        private readonly IEventSourcingService $eventSourcingService,
         private readonly IBookingService $bookingService,
         private readonly ICarService $carService,
         private readonly IPriceService $priceService
-    ) {
-        $this->setEventStore($eventStore);
-    }    
+    ) {}    
 
     public function handle(ICommand $command): mixed
     {
@@ -95,7 +90,7 @@ class CreateBookingHandler implements ICommandHandler
         );
 
         // Store event in event store
-        $this->persistAggregate($booking);
+        $this->eventSourcingService->save($booking);
         
         // Return booking response DTO
         $responseDTO = new BookingResponseDTO($booking);

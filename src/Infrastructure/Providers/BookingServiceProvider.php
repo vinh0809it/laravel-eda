@@ -4,7 +4,7 @@ namespace Src\Infrastructure\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Src\Application\Booking\UseCases\Commands\CreateBookingCommand;
-use Src\Application\Booking\UseCases\Commands\CreateBookingHandler;
+use Src\Application\Booking\UseCases\Commands\CreateBookingCommandHandler;
 use Src\Application\Shared\Bus\CommandBus;
 use Src\Application\Shared\Bus\QueryBus;
 use Src\Application\Booking\UseCases\Queries\GetBookingsQuery;
@@ -28,7 +28,7 @@ class BookingServiceProvider extends ServiceProvider
             
             $commandBus->register(
                 CreateBookingCommand::class, 
-                $app->make(CreateBookingHandler::class)
+                $app->make(CreateBookingCommandHandler::class)
             );
 
             $commandBus->register(

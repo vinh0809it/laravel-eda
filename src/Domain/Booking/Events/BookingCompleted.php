@@ -18,7 +18,7 @@ final class BookingCompleted implements IDomainEvent
 
     public function getEventType(): string
     {
-        return 'BookingCreated';
+        return 'BookingCompleted';
     }
 
     public function getAggregateType(): string

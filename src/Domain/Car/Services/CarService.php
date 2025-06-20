@@ -4,7 +4,6 @@ namespace Src\Domain\Car\Services;
 
 use Src\Domain\Car\Projections\ICarProjection;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
-use Src\Domain\Car\Aggregates\CarAggregate;
 use Src\Application\Car\DTOs\CarProjectionDTO;
 
 class CarService implements ICarService

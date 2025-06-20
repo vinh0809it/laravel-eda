@@ -7,6 +7,8 @@ use Src\Domain\Booking\Aggregates\BookingAggregate;
 use Src\Domain\Booking\Enums\BookingStatus;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Booking\Events\BookingCreated;
+use Src\Domain\Shared\Enums\HttpStatusCode;
+use Src\Domain\Shared\Exceptions\BussinessException;
 
 beforeEach(function () {
     $this->faker = \Faker\Factory::create();
@@ -51,7 +53,7 @@ test('aggregate completes a booking and records a BookingCompleted event', funct
         originalPrice: $this->originalPrice
     );
 
-    $actualEndDate = Carbon::parse($this->endDate)->addDays(1)->toDateString();
+    $actualEndDate = Carbon::parse($this->endDate)->addDays(1);
     $additionalPrice = randomMoney($this->faker);
     $finalPrice = randomMoney($this->faker);
 
@@ -62,7 +64,7 @@ test('aggregate completes a booking and records a BookingCompleted event', funct
     );
 
     expect($aggregate->getStatus())->toBe(BookingStatus::COMPLETED->value)
-        ->and($aggregate->getActualEndDate())->toBe($actualEndDate)
+        ->and($aggregate->getActualEndDate())->toBe($actualEndDate->format('Y-m-d'))
         ->and($aggregate->getFinalPrice())->toBe($finalPrice);
 
     $events = $aggregate->getRecordedEvents();
@@ -71,7 +73,40 @@ test('aggregate completes a booking and records a BookingCompleted event', funct
 })
 ->group('booking_aggregate');
 
-test('aggregate rebuilds aggregate state from events', function () {
+test('test aggregate can not complete the booking which is completed', function () {
+    $aggregate = BookingAggregate::create(
+        id: $this->bookingId,
+        carId: $this->carId,            
+        userId: $this->userId,
+        startDate: $this->startDate,
+        endDate: $this->endDate,
+        originalPrice: $this->originalPrice
+    );
+
+    $actualEndDate = Carbon::parse($this->endDate)->addDays(1);
+    $additionalPrice = randomMoney($this->faker);
+    $finalPrice = randomMoney($this->faker);
+
+    $aggregate->complete(
+        actualEndDate: $actualEndDate,
+        additionalPrice: $additionalPrice,
+        finalPrice: $finalPrice
+    );
+
+    expect(fn () => 
+        $aggregate->complete(
+            actualEndDate: $actualEndDate,
+            additionalPrice: $additionalPrice,
+            finalPrice: $finalPrice
+        )
+    )->toThrow(function (BussinessException $e) {
+        expect($e->getCode())->toBe(HttpStatusCode::CONFLICT->value);
+        expect($e->getMessage())->toBe('Booking is already completed!');
+    });
+})
+->group('booking_aggregate');
+
+test('test aggregate rebuilds aggregate state from events', function () {
 
     $actualEndDate = Carbon::parse($this->endDate)->addDays(1)->toDateString();
     $additionalPrice = randomMoney($this->faker);
