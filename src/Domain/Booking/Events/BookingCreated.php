@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Domain\Booking\Events;
 
+use Carbon\Carbon;
 use Src\Domain\Shared\Events\IDomainEvent;
 
 class BookingCreated implements IDomainEvent
@@ -12,8 +13,8 @@ class BookingCreated implements IDomainEvent
         public readonly string $bookingId,
         public readonly string $carId,
         public readonly string $userId,
-        public readonly string $startDate,
-        public readonly string $endDate,
+        public readonly Carbon $startDate,
+        public readonly Carbon $endDate,
         public readonly float $originalPrice
     ) {}
 
@@ -38,20 +39,23 @@ class BookingCreated implements IDomainEvent
             'booking_id' => $this->bookingId,
             'car_id' => $this->carId,
             'user_id' => $this->userId,
-            'start_date' => $this->startDate,
-            'end_date' => $this->endDate,
+            'start_date' => $this->startDate->toDateString(),
+            'end_date' => $this->endDate->toDateString(),
             'original_price' => $this->originalPrice
         ];
     }
 
     public static function fromArray(array $data): self
     {
+        $startDate = Carbon::parse($data['start_date']);
+        $endDate = Carbon::parse($data['end_date']);
+
         return new self(
             bookingId: $data['booking_id'],
             carId: $data['car_id'],
             userId: $data['user_id'],
-            startDate: $data['start_date'],
-            endDate: $data['end_date'],
+            startDate: $startDate,
+            endDate: $endDate,
             originalPrice: $data['original_price']
         );
     }

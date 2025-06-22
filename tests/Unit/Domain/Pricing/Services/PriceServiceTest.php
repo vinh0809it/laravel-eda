@@ -7,8 +7,8 @@ namespace Tests\Unit\Domain\Pricing\Services;
 use Carbon\Carbon;
 use Src\Domain\Pricing\Services\PriceService;
 use Src\Domain\Pricing\Contracts\IPriceCalculator;
-use Src\Application\Car\DTOs\CarProjectionDTO;
 use Src\Application\Pricing\DTOs\AdditionalPriceCalculationDTO;
+use Src\Domain\Car\Snapshots\CarSnapshot;
 
 beforeEach(function () {
     $this->faker = \Faker\Factory::create();
@@ -20,11 +20,12 @@ test('test calculates booking price correctly', function () {
     // Arrange
     $dailyPrice = $this->faker->randomFloat(2, 100, 1000);
 
-    ['start' => $startDate, 'end' => $endDate] = generateBookingDates($this->faker, 5);
+    $startDate = fakeDateFromNow();
+    $endDate = fakeDateFromNow(5);
 
     $expectedOriginalPrice = $dailyPrice * 5;
 
-    $car = new CarProjectionDTO(
+    $car = new CarSnapshot(
         id: $this->faker->uuid(),
         brand: $this->faker->word(),
         model: $this->faker->word(),
@@ -39,7 +40,7 @@ test('test calculates booking price correctly', function () {
         ->andReturn($expectedOriginalPrice);
 
     // Act
-    $result = $this->service->calculateBookingPrice($car, $startDate, $endDate);
+    $result = $this->service->calculateBookingPrice($car->pricePerDay, $startDate, $endDate);
 
     // Assert
     expect($result)->toBe($expectedOriginalPrice);
@@ -50,11 +51,12 @@ test('test handles single day booking', function () {
     // Arrange
     $dailyPrice = $this->faker->randomFloat(2, 100, 1000);
 
-    ['start' => $startDate, 'end' => $endDate] = generateBookingDates($this->faker, 1);
-    
+    $startDate = fakeDateFromNow();
+    $endDate = fakeDateFromNow(1);
+
     $expectedOriginalPrice = $dailyPrice;
 
-    $car = new CarProjectionDTO(
+    $car = new CarSnapshot(
         id: $this->faker->uuid(),
         brand: $this->faker->word(),
         model: $this->faker->word(),
@@ -69,7 +71,7 @@ test('test handles single day booking', function () {
         ->andReturn($expectedOriginalPrice);
 
     // Act
-    $result = $this->service->calculateBookingPrice($car, $startDate, $endDate);
+    $result = $this->service->calculateBookingPrice($car->pricePerDay, $startDate, $endDate);
 
     // Assert
     expect($result)->toBe($expectedOriginalPrice);

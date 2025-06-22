@@ -1,8 +1,8 @@
 <?php
 
-namespace Src\Application\Booking\DTOs;
+namespace Src\Domain\Booking\Snapshots;
 
-class BookingDTO
+class BookingSnapshot
 {
     public function __construct(
         public string $id,

@@ -3,6 +3,8 @@
 namespace Src\Infrastructure\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Src\Application\Booking\UseCases\Commands\ChangeBookingCommand;
+use Src\Application\Booking\UseCases\Commands\ChangeBookingCommandHandler;
 use Src\Application\Booking\UseCases\Commands\CreateBookingCommand;
 use Src\Application\Booking\UseCases\Commands\CreateBookingCommandHandler;
 use Src\Application\Shared\Bus\CommandBus;
@@ -34,6 +36,11 @@ class BookingServiceProvider extends ServiceProvider
             $commandBus->register(
                 CompleteBookingCommand::class, 
                 $app->make(CompleteBookingCommandHandler::class)
+            );
+
+            $commandBus->register(
+                ChangeBookingCommand::class, 
+                $app->make(ChangeBookingCommandHandler::class)
             );
 
             return $commandBus;

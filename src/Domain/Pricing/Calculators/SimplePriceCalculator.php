@@ -2,14 +2,15 @@
 
 namespace Src\Domain\Pricing\Calculators;
 
+use Carbon\Carbon;
 use Src\Domain\Pricing\Contracts\IPriceCalculator;
 use Src\Domain\Pricing\ValueObjects\Price;
 
 class SimplePriceCalculator implements IPriceCalculator
 {
-    public function calculateUsagePrice(Price $dailyPrice, string $startDate, string $endDate): float
+    public function calculateUsagePrice(Price $dailyPrice, Carbon $startDate, Carbon $endDate): float
     {
-        $days = (strtotime($endDate) - strtotime($startDate)) / (60 * 60 * 24);
+        $days = $startDate->diffInDays($endDate);
         return $dailyPrice->multiply($days);
     }
 } 

@@ -11,10 +11,10 @@ use Src\Application\Shared\Interfaces\ICommandHandler;
 use Src\Domain\Car\Exceptions\CarNotAvailableException;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Booking\Exceptions\BookingConflictException;
-use Illuminate\Support\Str;
-use Src\Application\Car\DTOs\CarProjectionDTO;
 use Src\Application\Booking\DTOs\BookingResponseDTO;
 use Src\Domain\Shared\Services\IEventSourcingService;
+use Ramsey\Uuid\Uuid;
+use Src\Domain\Car\Snapshots\CarSnapshot;
 
 class CreateBookingCommandHandler implements ICommandHandler
 {
@@ -55,13 +55,13 @@ class CreateBookingCommandHandler implements ICommandHandler
             throw new BookingConflictException(
                 trace: [
                     'userId' => $command->userId,
-                    'startDate' => $command->startDate,
-                    'endDate' => $command->endDate
+                    'startDate' => $command->startDate->toDateString(),
+                    'endDate' => $command->endDate->toDateString()
                 ]
             );
         }
 
-        $carDTO = new CarProjectionDTO(
+        $carSnapshot = new CarSnapshot(
             id: $car->id,
             brand: $car->brand,
             model: $car->model,
@@ -72,13 +72,13 @@ class CreateBookingCommandHandler implements ICommandHandler
         
         // Calculate original price using PriceService
         $originalPrice = $this->priceService->calculateBookingPrice(
-            $carDTO, 
-            $command->startDate, 
-            $command->endDate
+            dailyPrice: $carSnapshot->pricePerDay, 
+            startDate: $command->startDate, 
+            endDate: $command->endDate
         );
 
         // Create booking aggregate
-        $bookingId = Str::uuid();
+        $bookingId = Uuid::uuid4();
 
         $booking = BookingAggregate::create(
             id: $bookingId,

@@ -13,14 +13,14 @@ beforeEach(function () {
     $this->listener = new BookingCompletedListener();
 });
 
-test('listener logs booking creation event', function () {
+test('listener logs booking completion event', function () {
     // Arrange
     $event = new BookingCompleted(
-        bookingId: $this->faker->uuid(),
-        carId: $this->faker->uuid(),
-        actualEndDate: $this->faker->date(),
-        additionalPrice: $this->faker->randomFloat(2, 100, 1000),
-        finalPrice: $this->faker->randomFloat(2, 100, 1000)
+        bookingId: fakeUuid(),
+        carId: fakeUuid(),
+        actualEndDate: fakeDateFromNow(),
+        additionalPrice: fakeMoney(),
+        finalPrice: fakeMoney()
     );
 
     // Assert log will be called

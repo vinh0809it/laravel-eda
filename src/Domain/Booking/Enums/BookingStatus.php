@@ -5,7 +5,7 @@ namespace Src\Domain\Booking\Enums;
 enum BookingStatus: string
 {
     case CREATED = 'created';
-    case CONFIRMED = 'confirmed';
+    case CHANGED = 'changed';
     case CANCELLED = 'cancelled';
     case COMPLETED = 'completed';
 
@@ -13,7 +13,7 @@ enum BookingStatus: string
     {
         return match ($this) {
             self::CREATED => 'Created',
-            self::CONFIRMED => 'Confirmed', 
+            self::CHANGED => 'Changed', 
             self::CANCELLED => 'Cancelled',
             self::COMPLETED => 'Completed',
         };

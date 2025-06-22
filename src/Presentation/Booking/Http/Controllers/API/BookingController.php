@@ -2,18 +2,21 @@
 
 namespace Src\Presentation\Booking\Http\Controllers\API;
 
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Ramsey\Uuid\Guid\Guid;
 use Src\Application\Booking\UseCases\Commands\CreateBookingCommand;
 use Src\Application\Shared\Bus\CommandBus;
 use Src\Application\Shared\Bus\QueryBus;
 use Src\Presentation\Booking\Http\Requests\CreateBookingRequest;
 use Src\Application\Booking\UseCases\Queries\GetBookingsQuery;
 use InvalidArgumentException;
+use Ramsey\Uuid\Uuid;
+use Src\Application\Booking\UseCases\Commands\ChangeBookingCommand;
 use Src\Application\Booking\UseCases\Commands\CompleteBookingCommand;
-use Carbon\Carbon;
+use Src\Domain\Shared\Enums\HttpStatusCode;
+use Src\Presentation\Booking\Http\Requests\ChangeBookingRequest;
 
 final class BookingController extends Controller
 {
@@ -24,7 +27,7 @@ final class BookingController extends Controller
 
     public function index(?string $bookingId = null): JsonResponse
     {
-        if ($bookingId && !Guid::isValid($bookingId)) {
+        if ($bookingId && !Uuid::isValid($bookingId)) {
             throw new InvalidArgumentException('Invalid booking ID');
         }
 
@@ -52,9 +55,10 @@ final class BookingController extends Controller
             ],
         ]);
     }
+    
     public function complete(string $bookingId): JsonResponse
     {
-        if (!Guid::isValid($bookingId)) {
+        if (!Uuid::isValid($bookingId)) {
             throw new InvalidArgumentException('Invalid booking ID');
         }
 
@@ -69,19 +73,38 @@ final class BookingController extends Controller
         ]);
     }
 
-    public function store(CreateBookingRequest $request): JsonResponse
+    public function update(string $bookingId, ChangeBookingRequest $request): JsonResponse
     {
-        $command = new CreateBookingCommand(
-            carId: $request->car_id,
-            userId: Auth::id(),
-            startDate: $request->start_date,
-            endDate: $request->end_date,
+        if (!Uuid::isValid($bookingId)) {
+            throw new InvalidArgumentException('Invalid booking ID');
+        }
+
+        $command = new ChangeBookingCommand(
+            bookingId: $bookingId,
+            newStartDate: Carbon::parse($request->start_date),
+            newEndDate: Carbon::parse($request->end_date),
         );
 
         $response = $this->commandBus->dispatch($command);
         
         return response()->json([
             'data' => $response
-        ], 201);
+        ]);
+    }
+
+    public function store(CreateBookingRequest $request): JsonResponse
+    {
+        $command = new CreateBookingCommand(
+            carId: $request->car_id,
+            userId: Auth::id(),
+            startDate: Carbon::parse($request->start_date),
+            endDate: Carbon::parse($request->end_date),
+        );
+
+        $response = $this->commandBus->dispatch($command);
+        
+        return response()->json([
+            'data' => $response
+        ], HttpStatusCode::CREATED->value);
     }
 } 

@@ -4,7 +4,7 @@ namespace Src\Domain\Car\Services;
 
 use Src\Domain\Car\Projections\ICarProjection;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
-use Src\Application\Car\DTOs\CarProjectionDTO;
+use Src\Domain\Car\Snapshots\CarSnapshot;
 
 class CarService implements ICarService
 {
@@ -12,14 +12,14 @@ class CarService implements ICarService
         private readonly ICarProjection $carProjection
     ) {}
 
-    public function findCarById(string $carId): ?CarProjectionDTO
+    public function findCarById(string $carId): ?CarSnapshot
     {
         $car = $this->carProjection->findById($carId);
         if (!$car) {
             return null;
         }
 
-        return CarProjectionDTO::fromArray($car->toArray());
+        return CarSnapshot::fromArray($car->toArray());
     }
 
     public function isAvailable(string $carId): bool

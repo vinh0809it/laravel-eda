@@ -8,6 +8,7 @@ use Src\Domain\Booking\Projections\IBookingProjection;
 use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Booking\Events\BookingChanged;
 use Src\Domain\Shared\Loggers\IEventProcessLogger;
 
 class BookingProjection extends BaseProjection implements IBookingProjection
@@ -57,6 +58,29 @@ class BookingProjection extends BaseProjection implements IBookingProjection
         $booking->actual_end_date = $event->actualEndDate;
         $booking->final_price = $event->finalPrice;
         $booking->status = BookingStatus::COMPLETED->value;
+        $booking->save();
+
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
+    }
+
+    public function onBookingChanged(BookingChanged $event): void
+    {
+        $loggerContext = self::class . '::onBookingChanged';
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
+            return;
+        }
+
+        $booking = $this->model->find($event->bookingId);
+
+        if(!$booking) {
+            $this->logger->markFailure($event->bookingId, $loggerContext, 'Booking not found for changed');
+            return;
+        }
+        
+        $booking->start_date = $event->newStartDate;
+        $booking->end_date = $event->newEndDate;
+        $booking->original_price = $event->newOriginalPrice;
+        $booking->status = BookingStatus::CHANGED->value;
         $booking->save();
 
         $this->logger->markSuccess($event->bookingId, $loggerContext);

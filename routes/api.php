@@ -18,7 +18,8 @@ Route::middleware('api')->group(function () {
         Route::prefix('v1')->group(function () {
             Route::get('bookings/{bookingId?}', [BookingController::class, 'index']);
             Route::post('bookings', [BookingController::class, 'store']);
-            Route::post('booking/{bookingId}/complete', [BookingController::class, 'complete']);
+            Route::patch('bookings/{bookingId}', [BookingController::class, 'update']);
+            Route::post('bookings/{bookingId}/complete', [BookingController::class, 'complete']);
         });
     });
 });

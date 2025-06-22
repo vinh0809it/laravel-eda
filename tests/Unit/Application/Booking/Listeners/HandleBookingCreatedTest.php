@@ -9,19 +9,18 @@ use Src\Application\Booking\Listeners\BookingCreatedListener;
 use Illuminate\Support\Facades\Log;
 
 beforeEach(function () {
-    $this->faker = \Faker\Factory::create();
     $this->listener = new BookingCreatedListener();
 });
 
 test('listener logs booking creation event', function () {
     // Arrange
     $event = new BookingCreated(
-        bookingId: $this->faker->uuid(),
-        userId: $this->faker->uuid(),
-        carId: $this->faker->uuid(),
-        startDate: $this->faker->date(),
-        endDate: $this->faker->date(),
-        originalPrice: $this->faker->randomFloat(2, 100, 1000)
+        bookingId: fakeUuid(),
+        userId: fakeUuid(),
+        carId: fakeUuid(),
+        startDate: fakeDateFromNow(),
+        endDate: fakeDateFromNow(),
+        originalPrice: fakeMoney()
     );
 
     // Assert log will be called

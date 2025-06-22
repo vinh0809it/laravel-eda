@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Application\Booking\Commands;
 
-use Illuminate\Support\Facades\Event;
 use Src\Application\Booking\UseCases\Commands\CreateBookingCommand;
 use Src\Application\Booking\UseCases\Commands\CreateBookingCommandHandler;
 use Src\Domain\Booking\Services\IBookingService;
@@ -13,13 +12,12 @@ use Src\Domain\Pricing\Services\IPriceService;
 use Src\Domain\Car\Exceptions\CarNotAvailableException;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Booking\Exceptions\BookingConflictException;
-use Src\Application\Car\DTOs\CarProjectionDTO;
 use Src\Application\Shared\Interfaces\ICommand;
 use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Car\Snapshots\CarSnapshot;
 use Src\Domain\Shared\Services\IEventSourcingService;
 
 beforeEach(function () {
-    $this->faker = \Faker\Factory::create();
 
     // Mock dependencies
     $this->eventSourcingService = mock(IEventSourcingService::class);
@@ -37,32 +35,32 @@ beforeEach(function () {
 
     // Common test data
     $this->command = new CreateBookingCommand(
-        userId: $this->faker->uuid(),
-        carId: $this->faker->uuid(),
-        startDate: $this->faker->date(),
-        endDate: $this->faker->date()
+        userId: fakeUuid(),
+        carId: fakeUuid(),
+        startDate: fakeDateFromNow(),
+        endDate: fakeDateFromNow()
     );
 
     // Mock car entity
-    $this->carDTO = new CarProjectionDTO(
+    $this->car = new CarSnapshot(
         id: $this->command->carId,
-        brand: $this->faker->word(),
-        model: $this->faker->word(),
-        year: (int) $this->faker->year(),
-        pricePerDay: $this->faker->randomFloat(2, 100, 1000),
+        brand: faker()->word(),
+        model: faker()->word(),
+        year: (int) faker()->year(),
+        pricePerDay: fakeMoney(),
         isAvailable: true
     );
 });
 
 test('successfully creates a booking when all conditions are met', function () {
     // Arrange
-    $originalPrice = $this->faker->randomFloat(2, 100, 1000);
+    $originalPrice = fakeMoney();
     
     // Mock car service to return car
     $this->carService
         ->shouldReceive('findCarById')
         ->with($this->command->carId)
-        ->andReturn($this->carDTO);
+        ->andReturn($this->car);
     
     // Mock booking service to return no conflicts
     $this->bookingService
@@ -87,8 +85,8 @@ test('successfully creates a booking when all conditions are met', function () {
     expect($result['id'])->toBeString();
     expect($result['car_id'])->toBe($this->command->carId);
     expect($result['user_id'])->toBe($this->command->userId);
-    expect($result['start_date'])->toBe($this->command->startDate);
-    expect($result['end_date'])->toBe($this->command->endDate);
+    expect($result['start_date'])->toBe($this->command->startDate->toDateString());
+    expect($result['end_date'])->toBe($this->command->endDate->toDateString());
     expect($result['original_price'])->toBe($originalPrice);
     expect($result['status'])->toBe(BookingStatus::CREATED->value);
 })
@@ -109,12 +107,12 @@ test('throws exception when car is not found', function () {
 
 test('throws exception when car is not available', function () {
     // Arrange
-    $unavailableCar = new CarProjectionDTO(
+    $unavailableCar = new CarSnapshot(
         id: $this->command->carId,
-        brand: $this->faker->word(),
-        model: $this->faker->word(),
-        year: (int) $this->faker->year(),
-        pricePerDay: $this->faker->randomFloat(2, 100, 1000),
+        brand: faker()->word(),
+        model: faker()->word(),
+        year: (int) faker()->year(),
+        pricePerDay: fakeMoney(),
         isAvailable: false
     );
     
@@ -134,7 +132,7 @@ test('throws exception when booking dates conflict', function () {
     $this->carService
         ->shouldReceive('findCarById')
         ->with($this->command->carId)
-        ->andReturn($this->carDTO);
+        ->andReturn($this->car);
     
     $this->bookingService
         ->shouldReceive('isConflictWithOtherBookings')

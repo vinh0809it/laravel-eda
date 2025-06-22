@@ -16,8 +16,21 @@ class BookingResponseDTO
             'id' => $this->booking->getId(),
             'car_id' => $this->booking->getCarId(),
             'user_id' => $this->booking->getUserId(),
-            'start_date' => $this->booking->getStartDate(),
-            'end_date' => $this->booking->getEndDate(),
+            'start_date' => $this->booking->getStartDate()->toDateString(),
+            'end_date' => $this->booking->getEndDate()->toDateString(),
+            'original_price' => $this->booking->getOriginalPrice(),
+            'status' => $this->booking->getStatus()
+        ];
+    }
+
+    public function forChanging(): array
+    {
+        return [
+            'id' => $this->booking->getId(),
+            'car_id' => $this->booking->getCarId(),
+            'user_id' => $this->booking->getUserId(),
+            'start_date' => $this->booking->getStartDate()->toDateString(),
+            'end_date' => $this->booking->getEndDate()->toDateString(),
             'original_price' => $this->booking->getOriginalPrice(),
             'status' => $this->booking->getStatus()
         ];
@@ -29,9 +42,9 @@ class BookingResponseDTO
             'id' => $this->booking->getId(),
             'car_id' => $this->booking->getCarId(),
             'user_id' => $this->booking->getUserId(),
-            'start_date' => $this->booking->getStartDate(),
-            'end_date' => $this->booking->getEndDate(),
-            'actual_end_date' => $this->booking->getActualEndDate(),
+            'start_date' => $this->booking->getStartDate()->toDateString(),
+            'end_date' => $this->booking->getEndDate()->toDateString(),
+            'actual_end_date' => $this->booking->getActualEndDate()->toDateString(),
             'original_price' => $this->booking->getOriginalPrice(),
             'final_price' => $this->booking->getFinalPrice(),
             'status' => $this->booking->getStatus()

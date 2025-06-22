@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Src\Domain\Booking\Services;
 
+use Carbon\Carbon;
 use Src\Domain\Shared\Interfaces\IPaginationResult;
-use Src\Application\Booking\DTOs\BookingDTO;
 use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
+use Src\Domain\Booking\Snapshots\BookingSnapshot;
 
 class BookingService implements IBookingService
 {
@@ -14,7 +15,7 @@ class BookingService implements IBookingService
         private readonly IBookingReadRepository $bookingReadRepository
     ) {}
 
-    public function isConflictWithOtherBookings(string $userId, string $startDate, string $endDate): bool
+    public function isConflictWithOtherBookings(string $userId, Carbon $startDate, Carbon $endDate): bool
     {
         $existingBookings = $this->bookingReadRepository->findByDateRange(
             $startDate,
@@ -47,7 +48,7 @@ class BookingService implements IBookingService
         return $paginatedResult;
     }
 
-    public function getBookingById(string $bookingId): BookingDTO
+    public function getBookingById(string $bookingId): BookingSnapshot
     {
         return $this->bookingReadRepository->findById($bookingId);
     }   

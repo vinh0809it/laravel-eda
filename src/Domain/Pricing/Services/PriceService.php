@@ -2,9 +2,9 @@
 
 namespace Src\Domain\Pricing\Services;
 
+use Carbon\Carbon;
 use Src\Domain\Pricing\Contracts\IPriceCalculator;
 use Src\Domain\Pricing\ValueObjects\Price;
-use Src\Application\Car\DTOs\CarProjectionDTO;
 use Src\Application\Pricing\DTOs\AdditionalPriceCalculationDTO;
 
 class PriceService implements IPriceService
@@ -13,9 +13,8 @@ class PriceService implements IPriceService
         private readonly IPriceCalculator $priceCalculator,
     ) {}
 
-    public function calculateBookingPrice(CarProjectionDTO $car, string $startDate, string $endDate): float
+    public function calculateBookingPrice(float $dailyPrice, Carbon $startDate, Carbon $endDate): float
     {
-        $dailyPrice = $car->pricePerDay;
         $price = new Price($dailyPrice);
         return $this->priceCalculator->calculateUsagePrice(
             $price, 
@@ -28,6 +27,7 @@ class PriceService implements IPriceService
     {
         $dailyPrice = $additionalPriceCalculationDTO->pricePerDay;
         $price = new Price($dailyPrice);
+
         return $this->priceCalculator->calculateUsagePrice(
             $price, 
             $additionalPriceCalculationDTO->endDate, 

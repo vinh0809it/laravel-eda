@@ -2,14 +2,15 @@
 
 namespace Src\Infrastructure\Booking\ReadRepositories;
 
+use Carbon\Carbon;
 use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
 use Src\Infrastructure\Shared\Repositories\BaseRepository;
 use Src\Infrastructure\Booking\Models\Booking;
 use Src\Domain\Shared\Interfaces\IPaginationResult;
 use Src\Application\Shared\DTOs\PaginationDTO;
 use Src\Domain\Booking\Enums\BookingStatus;
-use Src\Application\Booking\DTOs\BookingDTO;
 use Src\Domain\Booking\Exceptions\BookingNotFoundException;
+use Src\Domain\Booking\Snapshots\BookingSnapshot;
 
 class BookingReadRepository extends BaseRepository implements IBookingReadRepository
 {
@@ -19,13 +20,13 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
         parent::__construct($model);
     }
     
-    public function findByDateRange($startDate, $endDate): array
+    public function findByDateRange(Carbon $startDate, Carbon $endDate): array
     {
         return $this->model->whereBetween('start_date', [$startDate, $endDate])
             ->where('status', BookingStatus::CREATED->value)
             ->get()
             ->map(function ($booking) {
-                return BookingDTO::fromArray($booking->toArray());
+                return BookingSnapshot::fromArray($booking->toArray());
             })
             ->all();
     }
@@ -51,7 +52,7 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
         $items = $paginator->getCollection()->map(function ($booking) {
-            return BookingDTO::fromArray($booking->toArray());
+            return BookingSnapshot::fromArray($booking->toArray());
         })->all();
 
         return new PaginationDTO(
@@ -63,7 +64,7 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
         );
     }
 
-    public function findById(string $bookingId): BookingDTO
+    public function findById(string $bookingId): BookingSnapshot
     {
         $booking = $this->model->find($bookingId);
 
@@ -71,6 +72,6 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
             throw new BookingNotFoundException(trace: ['bookingId' => $bookingId]);
         }
 
-        return BookingDTO::fromArray($booking->toArray());
+        return BookingSnapshot::fromArray($booking->toArray());
     }   
 }

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Application\Booking\Commands;
 
-use Carbon\Carbon;
-use Src\Application\Booking\UseCases\Commands\CompleteBookingCommand;
-use Src\Application\Booking\UseCases\Commands\CompleteBookingCommandHandler;
+use Src\Application\Booking\UseCases\Commands\ChangeBookingCommand;
+use Src\Application\Booking\UseCases\Commands\ChangeBookingCommandHandler;
 use Src\Domain\Booking\Services\IBookingService;
 use Src\Domain\Car\Services\ICarService;
 use Src\Domain\Pricing\Services\IPriceService;
@@ -18,9 +17,11 @@ use Src\Domain\Car\Snapshots\CarSnapshot;
 use Src\Domain\Shared\Services\IEventSourcingService;
 
 beforeEach(function () {
+
     // Mock variables
     $this->bookingId = fakeUuid();
     $this->carId = fakeUuid();
+    $this->bookingDays = 2;
 
     // Mock dependencies
     $this->eventSourcingService = mock(IEventSourcingService::class);
@@ -29,16 +30,18 @@ beforeEach(function () {
     $this->priceService = mock(IPriceService::class);
     
     // Create handler
-    $this->handler = new CompleteBookingCommandHandler(
+    $this->handler = new ChangeBookingCommandHandler(
         $this->eventSourcingService,
         $this->bookingService,
         $this->carService,
         $this->priceService
     );
 
-    // Command test data
-    $this->command = new CompleteBookingCommand(
-        bookingId: $this->bookingId
+    // Command data
+    $this->command = new ChangeBookingCommand(
+        bookingId: $this->bookingId,
+        newStartDate: fakeDateFromNow(),
+        newEndDate: fakeDateFromNow($this->bookingDays)
     );
 
     // Prepare Booking Created Event
@@ -49,25 +52,24 @@ beforeEach(function () {
             userId: fakeUuid(),
             startDate: fakeDateFromNow(),
             endDate: fakeDateFromNow(),
-            originalPrice: fakeMoney(),
+            originalPrice: faker()->randomFloat(2, 100, 1000),
         ),
     ];
 
-    // Mock car entity
+    // Mock car snapshot
     $this->car = new CarSnapshot(
         id: $this->carId,
         brand: faker()->word(),
         model: faker()->word(),
         year: (int) faker()->year(),
-        pricePerDay: fakeMoney(),
+        pricePerDay: faker()->randomFloat(2, 100, 1000),
         isAvailable: true
     );
 });
 
-test('successfully complete a booking', function () {
+test('successfully change a booking', function () {
     // Arrange
-    $additionalPrice = fakeMoney();
-    $finalPrice = fakeMoney();
+    $newOriginalPrice = faker()->randomFloat(2, 100, 1000);
 
     // Mock event store
     $this->eventSourcingService
@@ -83,15 +85,10 @@ test('successfully complete a booking', function () {
     
     // Mock price calculation
     $this->priceService
-        ->shouldReceive('calculateAdditionalPrice')
-        ->withAnyArgs()
-        ->andReturn($additionalPrice);
+        ->shouldReceive('calculateBookingPrice')
+        ->with($this->car->pricePerDay, $this->command->newStartDate, $this->command->newEndDate)
+        ->andReturn($newOriginalPrice);
     
-    $this->priceService
-        ->shouldReceive('calculateFinalPrice')
-        ->withAnyArgs()
-        ->andReturn($finalPrice);
-
     // Mock event store
     $this->eventSourcingService
         ->shouldReceive('save')
@@ -102,11 +99,12 @@ test('successfully complete a booking', function () {
 
     // Assert
     expect($result['id'])->toBeString();
-    expect($result['actual_end_date'])->toBe(Carbon::now()->toDateString());
-    expect($result['final_price'])->toBe($finalPrice);
-    expect($result['status'])->toBe(BookingStatus::COMPLETED->value);
+    expect($result['start_date'])->toBe($this->command->newStartDate->toDateString());
+    expect($result['end_date'])->toBe($this->command->newEndDate->toDateString());
+    expect($result['original_price'])->toBe($newOriginalPrice);
+    expect($result['status'])->toBe(BookingStatus::CHANGED->value);
 })
-->group('complete_booking_handler');
+->group('change_booking_handler');
 
 test('throws exception when car is not found', function () {
     // Mock event store
@@ -124,4 +122,4 @@ test('throws exception when car is not found', function () {
     expect(fn () => $this->handler->handle($this->command))
         ->toThrow(CarNotFoundException::class);
 })
-->group('complete_booking_handler');
+->group('change_booking_handler');

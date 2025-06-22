@@ -2,6 +2,7 @@
 
 namespace Src\Infrastructure\Car\Projections;
 
+use Src\Domain\Booking\Events\BookingChanged;
 use Src\Infrastructure\Car\Models\Car;
 use Src\Infrastructure\Shared\Projections\BaseProjection;
 use Src\Domain\Booking\Events\BookingCompleted;
@@ -41,6 +42,20 @@ class CarProjection extends BaseProjection implements ICarProjection
 
         $this->updateAvailability($event->carId, true);
 
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
+    }
+
+    public function onBookingChanged(BookingChanged $event): void
+    {
+        $loggerContext = self::class . '::onBookingChanged';
+
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
+            return;
+        }
+
+        // TODO:
+        // update avaialability by date range
+        
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 

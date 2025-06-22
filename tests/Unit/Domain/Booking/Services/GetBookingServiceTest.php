@@ -6,9 +6,9 @@ namespace Tests\Unit\Domain\Booking\Services;
 
 use Src\Domain\Booking\Services\BookingService;
 use Src\Application\Shared\DTOs\PaginationDTO;
-use Src\Application\Booking\DTOs\BookingDTO;
 use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
+use Src\Domain\Booking\Snapshots\BookingSnapshot;
 
 beforeEach(function () {
     $this->faker = \Faker\Factory::create();
@@ -29,7 +29,7 @@ test('returns paginated bookings with filters', function () {
         'status' => 'created',
     ];
 
-    $expectedBooking = new BookingDTO(
+    $expectedBooking = new BookingSnapshot(
         id: $this->faker->uuid(),
         carId: $filters['car_id'],
         userId: $filters['user_id'],
@@ -73,7 +73,7 @@ test('returns paginated bookings with filters', function () {
 test('returns booking by id', function () {
     // Arrange
     $bookingId = $this->faker->uuid();
-    $expectedBooking = new BookingDTO(
+    $expectedBooking = new BookingSnapshot(
         id: $bookingId,
         carId: $this->faker->uuid(),
         userId: $this->faker->uuid(),

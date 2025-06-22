@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Src\Domain\Booking\Services;
 
+use Carbon\Carbon;
 use Src\Domain\Shared\Interfaces\IPaginationResult;
-use Src\Application\Booking\DTOs\BookingDTO;
+use Src\Domain\Booking\Snapshots\BookingSnapshot;
 
 interface IBookingService
 {
-    public function isConflictWithOtherBookings(string $userId, string $startDate, string $endDate): bool;
+    public function isConflictWithOtherBookings(string $userId, Carbon $startDate, Carbon $endDate): bool;
 
     public function getBookings(
         int $page = 1,
@@ -19,5 +20,5 @@ interface IBookingService
         array $filters = []
     ): IPaginationResult;
 
-    public function getBookingById(string $bookingId): BookingDTO;
+    public function getBookingById(string $bookingId): BookingSnapshot;
 }

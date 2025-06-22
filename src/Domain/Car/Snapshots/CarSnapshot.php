@@ -1,8 +1,8 @@
 <?php
 
-namespace Src\Application\Car\DTOs;
+namespace Src\Domain\Car\Snapshots;
 
-class CarProjectionDTO
+class CarSnapshot
 {
     public function __construct(
         public readonly string $id,

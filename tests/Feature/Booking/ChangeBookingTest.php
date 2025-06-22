@@ -16,12 +16,18 @@ use Src\Infrastructure\User\ReadModels\User;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+
     $this->user = User::factory()->create();
     $this->car = Car::factory()->create();
 
     $this->token = $this->user->createToken('test-token')->plainTextToken;
 
     $this->bookingId = fakeUuid();
+
+    $bookingDays = 2;
+    $this->newStartDate = fakeDateFromNow();
+    $this->newEndDate = fakeDateFromNow($bookingDays);
+    $this->newOriginalPrice = $this->car->price_per_day * $bookingDays;
 
     $aggregate = BookingAggregate::create(
         id: $this->bookingId,
@@ -35,13 +41,17 @@ beforeEach(function () {
     app(EventSourcingService::class)->save($aggregate);
 });
 
-test('test completes a booking successfully', function () {
+test('test changes a booking successfully', function () {
     // Arrange
-    $payload = [];
-    $endpoint = '/api/v1/bookings/' . $this->bookingId . '/complete';
+    $payload = [
+        'start_date' => $this->newStartDate,
+        'end_date' => $this->newEndDate
+    ];
+
+    $endpoint = '/api/v1/bookings/' . $this->bookingId;
 
     // Act
-    $response = $this->withToken($this->token)->postJson($endpoint, $payload);
+    $response = $this->withToken($this->token)->patchJson($endpoint, $payload);
 
     // Assert
     $response->assertStatus(HttpStatusCode::OK->value)
@@ -52,9 +62,7 @@ test('test completes a booking successfully', function () {
                 'user_id',
                 'start_date',
                 'end_date',
-                'actual_end_date',
                 'original_price',
-                'final_price',
                 'status'
             ]
         ]);
@@ -63,23 +71,30 @@ test('test completes a booking successfully', function () {
         'id' => $this->bookingId,
         'car_id' => $this->car->id,
         'user_id' => $this->user->id,
-        'status' => BookingStatus::COMPLETED->value
+        'start_date' => $this->newStartDate->startOfDay()->format('Y-m-d H:i:s'),
+        'end_date' => $this->newEndDate->startOfDay()->format('Y-m-d H:i:s'),
+        'original_price' => $this->newOriginalPrice,
+        'status' => BookingStatus::CHANGED->value
     ]);
 
     $this->assertDatabaseHas('cars', [
         'id' => $this->car->id,
-        'is_available' => true
+        'is_available' => false
     ]);
 })
-->group('complete_booking_integration');
+->group('change_booking_integration');
 
-test('test fails to complete a booking with wrong booking id', function () {
+test('test fails to change a booking with wrong booking id', function () {
     // Arrange
-    $payload = [];
-    $endpoint = '/api/v1/bookings/' . fakeUuid() . '/complete';
+    $payload = [
+        'start_date' => $this->newStartDate,
+        'end_date' => $this->newEndDate
+    ];
+
+    $endpoint = '/api/v1/bookings/' . fakeUuid();
 
     // Act
-    $response = $this->withToken($this->token)->postJson($endpoint, $payload);
+    $response = $this->withToken($this->token)->patchJson($endpoint, $payload);
 
     // Assert
     assertErrorResponse(
@@ -89,4 +104,4 @@ test('test fails to complete a booking with wrong booking id', function () {
         httpStatusCode: HttpStatusCode::NOT_FOUND->value
     );
 })
-->group('complete_booking_integration');
+->group('change_booking_integration');

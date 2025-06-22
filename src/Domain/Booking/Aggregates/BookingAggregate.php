@@ -7,6 +7,7 @@ use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Shared\Aggregate\AggregateRoot;
 use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Booking\Events\BookingChanged;
 use Src\Domain\Shared\Enums\HttpStatusCode;
 use Src\Domain\Shared\Events\IDomainEvent;
 use Src\Domain\Shared\Exceptions\BussinessException;
@@ -18,9 +19,9 @@ class BookingAggregate extends AggregateRoot
     private string $id;
     private string $carId;
     private string $userId;
-    private string $startDate;
-    private string $endDate;
-    private string $actualEndDate;
+    private Carbon $startDate;
+    private Carbon $endDate;
+    private Carbon $actualEndDate;
     private float $originalPrice;
     private float $finalPrice;
     private string $status;
@@ -29,13 +30,12 @@ class BookingAggregate extends AggregateRoot
         string $id,
         string $carId,
         string $userId,
-        string $startDate,
-        string $endDate,
+        Carbon $startDate,
+        Carbon $endDate,
         float $originalPrice
     ): self {
         $booking = new self();
 
-        // Create event
         $event = new BookingCreated(
             bookingId: $id,
             carId: $carId,
@@ -51,6 +51,26 @@ class BookingAggregate extends AggregateRoot
         return $booking;
     }
 
+     public function change(Carbon $newStartDate, Carbon $newEndDate, float $newOriginalPrice): void
+    {
+        if ($this->status === BookingStatus::COMPLETED->value) {
+            throw new BussinessException(
+                message: 'Booking is already completed!',
+                code: HttpStatusCode::CONFLICT->value
+            );
+        }
+
+        $event = new BookingChanged(
+            bookingId: $this->id,
+            newStartDate: $newStartDate,
+            newEndDate: $newEndDate,
+            newOriginalPrice: $newOriginalPrice
+        );
+
+        $this->recordEvent($event);
+        $this->apply($event);
+    }
+
     public function complete(Carbon $actualEndDate, float $additionalPrice, float $finalPrice): void
     {
         if ($this->status === BookingStatus::COMPLETED->value) {
@@ -63,7 +83,7 @@ class BookingAggregate extends AggregateRoot
         $event = new BookingCompleted(
             bookingId: $this->id,
             carId: $this->carId,
-            actualEndDate: $actualEndDate->format('Y-m-d'),
+            actualEndDate: $actualEndDate,
             additionalPrice: $additionalPrice,
             finalPrice: $finalPrice
         );
@@ -86,6 +106,7 @@ class BookingAggregate extends AggregateRoot
     public function apply(IDomainEvent $event): void
     {   
         if ($event instanceof BookingCreated) {
+            
             $this->id = $event->bookingId;
             $this->carId = $event->carId;
             $this->userId = $event->userId;
@@ -93,6 +114,13 @@ class BookingAggregate extends AggregateRoot
             $this->endDate = $event->endDate;
             $this->originalPrice = $event->originalPrice;
             $this->status = BookingStatus::CREATED->value;
+
+        }else if ($event instanceof BookingChanged) {
+
+            $this->startDate = $event->newStartDate;
+            $this->endDate = $event->newEndDate;
+            $this->originalPrice = $event->newOriginalPrice;
+            $this->status = BookingStatus::CHANGED->value;
 
         }else if ($event instanceof BookingCompleted) {
 
@@ -120,17 +148,17 @@ class BookingAggregate extends AggregateRoot
         return $this->userId;
     }
 
-    public function getStartDate(): string
+    public function getStartDate(): Carbon
     {
         return $this->startDate;
     }
 
-    public function getEndDate(): string
+    public function getEndDate(): Carbon
     {
         return $this->endDate;
     }
 
-    public function getActualEndDate(): string
+    public function getActualEndDate(): Carbon
     {
         return $this->actualEndDate;
     }

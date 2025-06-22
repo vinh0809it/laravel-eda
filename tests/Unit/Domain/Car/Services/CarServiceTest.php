@@ -7,7 +7,7 @@ namespace Tests\Unit\Domain\Car\Services;
 use Src\Domain\Car\Services\CarService;
 use Src\Domain\Car\Projections\ICarProjection;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
-use Src\Application\Car\DTOs\CarProjectionDTO;
+use Src\Domain\Car\Snapshots\CarSnapshot;
 use Src\Infrastructure\Car\Models\Car;
 
 beforeEach(function () {
@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->service = new CarService($this->projection);
 });
 
-test('finds car by id and returns DTO', function () {
+test('finds car by id and returns Snapshot', function () {
     // Arrange
     $carId = $this->faker->uuid();
     $carData = [
@@ -38,7 +38,7 @@ test('finds car by id and returns DTO', function () {
 
     // Assert
     expect($result)
-        ->toBeInstanceOf(CarProjectionDTO::class)
+        ->toBeInstanceOf(CarSnapshot::class)
         ->and($result->id)->toBe($carId)
         ->and($result->brand)->toBe($carData['brand'])
         ->and($result->model)->toBe($carData['model'])

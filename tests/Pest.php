@@ -43,6 +43,13 @@ expect()->extend('toBeOne', function () {
 |
 */
 
+use Faker\Generator;
+use Carbon\Carbon;
+
+function faker(): Generator {
+    return app(Generator::class);
+}
+
 function mockEventDispatcher()
 {
     $dispatcher = mock(\Illuminate\Contracts\Events\Dispatcher::class);
@@ -53,21 +60,20 @@ function mockEventDispatcher()
     return $dispatcher;
 }
 
-function generateBookingDates(Faker\Generator $faker, int $days = 5): array {
-    $start = $faker->dateTimeBetween('now', '+1 week');
-    $end = (clone $start)->modify("+{$days} days");
-    return [
-        'start' => $start->format('Y-m-d'),
-        'end' => $end->format('Y-m-d'),
-    ];
+function fakeMoney(int $from = 100, int $to = 1000): float {
+    return faker()->randomFloat(2, $from, $to);
 }
 
-function randomMoney(Faker\Generator $faker, int $from = 100, int $to = 1000): float {
-    return $faker->randomFloat(2, $from, $to);
+function fakeUuid() {
+    return faker()->uuid();
+}
+
+function fakeDateFromNow(int $daysFromNow = 0): Carbon 
+{
+    return Carbon::now()->startOfDay()->addDays($daysFromNow);
 }
 
 function assertErrorResponse(TestResponse $response, ?string $errorCode, ?string $msg, int $httpStatusCode = 500) {
-    
     $response->assertStatus($httpStatusCode)
             ->assertJsonStructure([
                 'error_code',

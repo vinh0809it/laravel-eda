@@ -10,6 +10,5 @@ final class CompleteBookingCommand implements ICommand
 {
     public function __construct(
         public readonly string $bookingId
-    ) {
-    }
+    ) {}
 } 
