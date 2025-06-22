@@ -22,28 +22,13 @@ class CarService implements ICarService
         return CarSnapshot::fromArray($car->toArray());
     }
 
-    public function isAvailable(string $carId): bool
+    public function getDailyPrice(string $carId): float
     {
         $car = $this->carProjection->findById($carId);
         if (!$car) {
             throw new CarNotFoundException(
                 trace: ['carId' => $carId]
             );
-        }
-
-        return $car->is_available;
-    }   
-
-    public function isCarExists(string $carId): bool
-    {
-        return $this->carProjection->findById($carId) !== null;
-    }
-
-    public function getDailyPrice(string $carId): float
-    {
-        $car = $this->carProjection->findById($carId);
-        if (!$car) {
-            throw new CarNotFoundException("Car not found with ID: {$carId}");
         }
 
         return $car->price_per_day;

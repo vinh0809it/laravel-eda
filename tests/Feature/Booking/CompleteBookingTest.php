@@ -68,7 +68,7 @@ test('test completes a booking successfully', function () {
 
     $this->assertDatabaseHas('cars', [
         'id' => $this->car->id,
-        'is_available' => true
+        'last_booking_completed_at' => now()->toDateTimeString()
     ]);
 })
 ->group('complete_booking_integration');

@@ -2,6 +2,7 @@
 
 namespace Src\Infrastructure\Car\Projections;
 
+use Carbon\Carbon;
 use Src\Domain\Booking\Events\BookingChanged;
 use Src\Infrastructure\Car\Models\Car;
 use Src\Infrastructure\Shared\Projections\BaseProjection;
@@ -21,46 +22,53 @@ class CarProjection extends BaseProjection implements ICarProjection
 
     public function onBookingCreated(BookingCreated $event): void
     {
-        $loggerContext = self::class . '::onBookingCreated';
+        $loggerContext = $this->context(__FUNCTION__);
 
         if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
         }
 
-        $this->updateAvailability($event->carId, false);
+        $this->increaseBookedCount($event->carId);
 
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
     public function onBookingCompleted(BookingCompleted $event): void
     {
-        $loggerContext = self::class . '::onBookingCompleted';
+        $loggerContext = $this->context(__FUNCTION__);
 
         if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
         }
 
-        $this->updateAvailability($event->carId, true);
+        $this->updateLastBookingCompletedAt($event->carId, $event->actualEndDate);
 
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
     public function onBookingChanged(BookingChanged $event): void
     {
-        $loggerContext = self::class . '::onBookingChanged';
+        $loggerContext = $this->context(__FUNCTION__);
 
         if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
         }
 
         // TODO:
-        // update avaialability by date range
+        // update something
         
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
-    public function updateAvailability(string $id, bool $isAvailable): void
+    public function increaseBookedCount(string $id): void
     {
-        $this->model->where('id', $id)->update(['is_available' => $isAvailable]);
+        $this->model->where('id', $id)->increment('booked_count');
+    }
+
+    public function updateLastBookingCompletedAt(string $id, Carbon $completedAt): void
+    {
+        $this->model->where('id', $id)->update([
+            'last_booking_completed_at' => $completedAt
+        ]);
     }
 }

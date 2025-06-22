@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('model');
             $table->integer('year');
             $table->decimal('price_per_day', 10, 2);
-            $table->boolean('is_available')->default(true);
+            $table->integer('booked_count')->default(0);
+            $table->timestamp('last_booking_completed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

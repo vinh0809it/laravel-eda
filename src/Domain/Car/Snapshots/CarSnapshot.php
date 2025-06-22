@@ -10,7 +10,7 @@ class CarSnapshot
         public readonly string $model,
         public readonly int $year,
         public readonly float $pricePerDay,
-        public readonly bool $isAvailable,
+        public readonly int $bookedCount,
     ) {}
 
     public function toArray(): array
@@ -21,7 +21,7 @@ class CarSnapshot
             'model' => $this->model,
             'year' => $this->year,
             'pricePerDay' => $this->pricePerDay,
-            'isAvailable' => $this->isAvailable,
+            'bookedCount' => $this->bookedCount,
         ];
     }
 
@@ -33,7 +33,7 @@ class CarSnapshot
             model: $data['model'],
             year: $data['year'],
             pricePerDay: $data['price_per_day'],
-            isAvailable: $data['is_available'],
+            bookedCount: $data['booked_count']
         );
     }
 }

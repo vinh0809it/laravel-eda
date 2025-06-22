@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Booking\Services;
 
-use Src\Domain\Booking\Enums\BookingStatus;
 use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
 use Src\Domain\Booking\Services\BookingService;
-use Src\Domain\Booking\Snapshots\BookingSnapshot;
 
 beforeEach(function () {
     $this->readRepo = mock(IBookingReadRepository::class);
@@ -17,32 +15,19 @@ beforeEach(function () {
 test('BookingService detects conflicts when dates overlap', function () {
     // Arrange
     $userId = fakeUuid();
+    $carId = fakeUuid();
     $inputStart = fakeDateFromNow();
     $inputEnd = fakeDateFromNow(5);
-    $existingStart = faker()->date($inputStart);
-    $existingEnd = faker()->date($existingStart);
 
     // Mock existing bookings that overlap
-    $this->readRepo->shouldReceive('findByDateRange')
-        ->withArgs(function ($startDateArg, $endDateArg) use ($inputStart, $inputEnd) {
-            return $startDateArg === $inputStart &&
-                   $endDateArg === $inputEnd;
-        })
-        ->andReturn([
-            BookingSnapshot::fromArray([
-                'id' => fakeUuid(),
-                'car_id' => fakeUuid(),
-                'user_id' => $userId,
-                'start_date' => $existingStart,
-                'end_date' => $existingEnd,
-                'original_price' => faker()->randomFLoat(2, 100, 1000),
-                'status' => faker()->randomElement(BookingStatus::toArray()),
-            ])
-        ]);
+    $this->readRepo->shouldReceive('hasBookingConflict')
+        ->with($userId, $carId, $inputStart, $inputEnd)
+        ->andReturn(true);
 
     // Act
-    $hasConflict = $this->service->isConflictWithOtherBookings(
+    $hasConflict = $this->service->hasBookingConflict(
         userId: $userId,
+        carId: $carId,
         startDate: $inputStart,
         endDate: $inputEnd
     );
@@ -55,20 +40,19 @@ test('BookingService detects conflicts when dates overlap', function () {
 test('BookingService returns no conflict when dates do not overlap', function () {
     // Arrange
     $userId = fakeUuid();
+    $carId = fakeUuid();
     $inputStart = fakeDateFromNow();
     $inputEnd = $inputStart;
 
     // Mock existing bookings that don't overlap
-    $this->readRepo->shouldReceive('findByDateRange')
-        ->withArgs(function ($startDateArg, $endDateArg) use ($inputStart, $inputEnd) {
-            return $startDateArg === $inputStart &&
-                   $endDateArg === $inputEnd;
-        })
-        ->andReturn([]);
+    $this->readRepo->shouldReceive('hasBookingConflict')
+        ->with($userId, $carId, $inputStart, $inputEnd)
+        ->andReturn(false);
 
     // Act
-    $hasConflict = $this->service->isConflictWithOtherBookings(
+    $hasConflict = $this->service->hasBookingConflict(
         userId: $userId,
+        carId: $carId,
         startDate: $inputStart,
         endDate: $inputEnd
     );

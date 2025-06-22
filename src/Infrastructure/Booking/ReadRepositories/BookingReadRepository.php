@@ -20,15 +20,17 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
         parent::__construct($model);
     }
     
-    public function findByDateRange(Carbon $startDate, Carbon $endDate): array
-    {
+    public function hasBookingConflict(string $userId, string $carId, Carbon $startDate, Carbon $endDate): bool
+    { 
         return $this->model->whereBetween('start_date', [$startDate, $endDate])
-            ->where('status', BookingStatus::CREATED->value)
-            ->get()
-            ->map(function ($booking) {
-                return BookingSnapshot::fromArray($booking->toArray());
+            ->where('status', '<>', BookingStatus::CANCELLED->value)
+            ->where('start_date', '<=', $endDate)
+            ->where('end_date', '>=', $startDate)
+            ->where(function ($q) use ($userId, $carId) {
+                $q->where('user_id', $userId)
+                  ->orWhere('car_id', $carId);
             })
-            ->all();
+            ->exists();
     }
 
     public function paginate(

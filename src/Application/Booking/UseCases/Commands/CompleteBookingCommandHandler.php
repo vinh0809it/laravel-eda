@@ -14,7 +14,6 @@ use Src\Application\Shared\Interfaces\ICommandHandler;
 use Src\Application\Booking\DTOs\BookingResponseDTO;
 use Src\Application\Pricing\DTOs\AdditionalPriceCalculationDTO;
 use Src\Domain\Booking\Exceptions\BookingNotFoundException;
-use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Shared\Services\IEventSourcingService;
 
 final class CompleteBookingCommandHandler implements ICommandHandler
@@ -45,20 +44,14 @@ final class CompleteBookingCommandHandler implements ICommandHandler
 
         $booking = BookingAggregate::replayEvents($events);
 
-        // Get car details
-        $car = $this->carService->findCarById($booking->getCarId());
-
-        if (!$car) {
-            throw new CarNotFoundException(
-                trace: ['carId' => $booking->getCarId()]
-            );
-        }
+        // Price per day from Car
+        $pricePerDay = $this->carService->getDailyPrice($booking->getCarId());
 
         $endDate = Carbon::parse($booking->getEndDate());
         $actualEndDate = Carbon::now();
 
         $additionalPriceCalculationDTO = new AdditionalPriceCalculationDTO(
-            pricePerDay: $car->pricePerDay,
+            pricePerDay: $pricePerDay,
             endDate: $endDate,
             actualEndDate: $actualEndDate
         );

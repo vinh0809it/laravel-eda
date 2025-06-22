@@ -6,6 +6,7 @@ namespace Tests\Feature\Booking;
 
 use Src\Infrastructure\Car\Models\Car;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Src\Domain\Shared\Enums\HttpStatusCode;
 use Src\Infrastructure\Booking\Models\Booking;
 use Src\Infrastructure\User\ReadModels\User;
 
@@ -63,7 +64,7 @@ test('creates a booking successfully', function () {
     // Verify the event was dispatched by checking its side effects
     $this->assertDatabaseHas('cars', [
         'id' => $this->car->id,
-        'is_available' => false
+        'booked_count' => 1
     ]);
 })
 ->group('create_booking_integration');
@@ -83,33 +84,6 @@ test('fails to create booking with invalid dates', function () {
     // Assert
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['end_date']);
-
-    // Verify no booking was created
-    $this->assertDatabaseMissing('bookings', [
-        'car_id' => $this->car->id
-    ]);
-})
-->group('create_booking_integration');
-
-test('fails to create booking with unavailable car', function () {
-    // Arrange
-    $this->car->update(['is_available' => false]);
-
-    $payload = [
-        'car_id' => $this->car->id,
-        'start_date' => now()->addDays(1)->format('Y-m-d'),
-        'end_date' => now()->addDays(5)->format('Y-m-d')
-    ];
-
-    // Act
-    $response = $this->withToken($this->token)
-        ->postJson('/api/v1/bookings', $payload);
-
-    // Assert
-    $response->assertStatus(409)
-        ->assertJson([
-            'error_code' => 'CAR_NOT_AVAILABLE'
-        ]);
 
     // Verify no booking was created
     $this->assertDatabaseMissing('bookings', [
@@ -163,10 +137,12 @@ test('fails to create booking with overlapping dates', function () {
         ->postJson('/api/v1/bookings', $payload);
 
     // Assert
-    $response->assertStatus(409)
-        ->assertJson([
-            'error_code' => 'BOOKING_CONFLICT'
-        ]);
+    assertErrorResponse(
+        response: $response,
+        errorCode: 'BOOKING_CONFLICT',
+        msg: 'Booking conflict',
+        httpStatusCode: HttpStatusCode::CONFLICT->value
+    );
 
     // Verify only one booking exists
     $this->assertDatabaseCount('bookings', 1);

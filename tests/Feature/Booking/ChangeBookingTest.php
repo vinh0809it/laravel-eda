@@ -22,7 +22,7 @@ beforeEach(function () {
 
     $this->token = $this->user->createToken('test-token')->plainTextToken;
 
-    $this->bookingId = fakeUuid();
+    $this->bookingId = faker()->uuid();
 
     $bookingDays = 2;
     $this->newStartDate = fakeDateFromNow();
@@ -76,11 +76,6 @@ test('test changes a booking successfully', function () {
         'original_price' => $this->newOriginalPrice,
         'status' => BookingStatus::CHANGED->value
     ]);
-
-    $this->assertDatabaseHas('cars', [
-        'id' => $this->car->id,
-        'is_available' => false
-    ]);
 })
 ->group('change_booking_integration');
 
@@ -91,7 +86,7 @@ test('test fails to change a booking with wrong booking id', function () {
         'end_date' => $this->newEndDate
     ];
 
-    $endpoint = '/api/v1/bookings/' . fakeUuid();
+    $endpoint = '/api/v1/bookings/' . faker()->uuid();
 
     // Act
     $response = $this->withToken($this->token)->patchJson($endpoint, $payload);

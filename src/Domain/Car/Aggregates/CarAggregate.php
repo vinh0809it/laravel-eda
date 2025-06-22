@@ -12,7 +12,7 @@ class CarAggregate
         private readonly string $model,
         private readonly string $year,
         private readonly float $pricePerDay,
-        private readonly bool $isAvailable,
+        private readonly int $bookedCount,
     ) {}
 
     public static function create(
@@ -21,7 +21,7 @@ class CarAggregate
         string $model,
         string $year,
         float $pricePerDay,
-        bool $isAvailable
+        int $bookedCount
     ): self {
         $car = new self(
             id: $id,
@@ -29,7 +29,7 @@ class CarAggregate
             model: $model,
             year: $year,
             pricePerDay: $pricePerDay,
-            isAvailable: $isAvailable,
+            bookedCount: $bookedCount,
         );
 
         $car->version = 1;
@@ -45,14 +45,14 @@ class CarAggregate
             'model' => $this->model,
             'year' => $this->year,
             'price_per_day' => $this->pricePerDay,
-            'is_available' => $this->isAvailable,
+            'booked_count' => $this->bookedCount,
             'version' => $this->version,
         ];
     }
 
-    public function isAvailable(): bool
+    public function getBookedCount(): int
     {
-        return $this->isAvailable;
+        return $this->bookedCount;
     }
 
     public function getPricePerDay(): float

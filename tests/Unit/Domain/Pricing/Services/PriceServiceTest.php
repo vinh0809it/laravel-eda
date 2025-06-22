@@ -31,7 +31,7 @@ test('test calculates booking price correctly', function () {
         model: $this->faker->word(),
         year: (int) $this->faker->year(),
         pricePerDay: $dailyPrice,
-        isAvailable: true
+        bookedCount: 0
     );
 
     $this->priceCalculator
@@ -62,7 +62,7 @@ test('test handles single day booking', function () {
         model: $this->faker->word(),
         year: (int) $this->faker->year(),
         pricePerDay: $dailyPrice,
-        isAvailable: true
+        bookedCount: 0
     );
 
     $this->priceCalculator

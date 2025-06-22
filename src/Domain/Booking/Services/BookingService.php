@@ -15,18 +15,14 @@ class BookingService implements IBookingService
         private readonly IBookingReadRepository $bookingReadRepository
     ) {}
 
-    public function isConflictWithOtherBookings(string $userId, Carbon $startDate, Carbon $endDate): bool
+    public function hasBookingConflict(string $userId, string $carId, Carbon $startDate, Carbon $endDate): bool
     {
-        $existingBookings = $this->bookingReadRepository->findByDateRange(
-            $startDate,
-            $endDate
+        return $this->bookingReadRepository->hasBookingConflict(
+            userId: $userId,
+            carId: $carId,
+            startDate: $startDate,
+            endDate: $endDate
         );
-
-        $conflictingBookings = array_filter($existingBookings, function ($booking) use ($userId) {
-            return $booking->userId === $userId;
-        });
-        
-        return count($conflictingBookings) > 0;
     }
 
     public function getBookings(

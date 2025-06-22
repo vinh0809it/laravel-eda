@@ -12,6 +12,11 @@ abstract class BaseProjection implements IBaseProjection
         protected readonly Model $model
     ) {}
 
+    protected function context(string $method): string
+    {
+        return self::class . '::' . $method;
+    }
+
     public function findById(string $id)
     {
         return $this->model->find($id);

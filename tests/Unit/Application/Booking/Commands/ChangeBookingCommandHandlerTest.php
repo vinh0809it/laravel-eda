@@ -52,7 +52,7 @@ beforeEach(function () {
             userId: fakeUuid(),
             startDate: fakeDateFromNow(),
             endDate: fakeDateFromNow(),
-            originalPrice: faker()->randomFloat(2, 100, 1000),
+            originalPrice: fakeMoney(),
         ),
     ];
 
@@ -62,14 +62,14 @@ beforeEach(function () {
         brand: faker()->word(),
         model: faker()->word(),
         year: (int) faker()->year(),
-        pricePerDay: faker()->randomFloat(2, 100, 1000),
-        isAvailable: true
+        pricePerDay: fakeMoney(),
+        bookedCount: 0
     );
 });
 
 test('successfully change a booking', function () {
     // Arrange
-    $newOriginalPrice = faker()->randomFloat(2, 100, 1000);
+    $newOriginalPrice = fakeMoney();
 
     // Mock event store
     $this->eventSourcingService
@@ -79,9 +79,9 @@ test('successfully change a booking', function () {
 
     // Mock car service to return car
     $this->carService
-        ->shouldReceive('findCarById')
+        ->shouldReceive('getDailyPrice')
         ->with($this->carId)
-        ->andReturn($this->car);
+        ->andReturn($this->car->pricePerDay);
     
     // Mock price calculation
     $this->priceService
@@ -114,10 +114,14 @@ test('throws exception when car is not found', function () {
         ->andReturn($this->events);
 
     $this->carService
-        ->shouldReceive('findCarById')
+        ->shouldReceive('getDailyPrice')
         ->with($this->carId)
-        ->andReturnNull();
-        
+        ->andThrow(
+            new CarNotFoundException(
+                trace: ['carId' => $this->carId]
+            )
+        );
+
     // Assert & Act
     expect(fn () => $this->handler->handle($this->command))
         ->toThrow(CarNotFoundException::class);

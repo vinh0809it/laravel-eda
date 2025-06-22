@@ -9,7 +9,6 @@ use Src\Application\Booking\UseCases\Commands\CreateBookingCommandHandler;
 use Src\Domain\Booking\Services\IBookingService;
 use Src\Domain\Car\Services\ICarService;
 use Src\Domain\Pricing\Services\IPriceService;
-use Src\Domain\Car\Exceptions\CarNotAvailableException;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Booking\Exceptions\BookingConflictException;
 use Src\Application\Shared\Interfaces\ICommand;
@@ -48,7 +47,7 @@ beforeEach(function () {
         model: faker()->word(),
         year: (int) faker()->year(),
         pricePerDay: fakeMoney(),
-        isAvailable: true
+        bookedCount: 0
     );
 });
 
@@ -64,8 +63,8 @@ test('successfully creates a booking when all conditions are met', function () {
     
     // Mock booking service to return no conflicts
     $this->bookingService
-        ->shouldReceive('isConflictWithOtherBookings')
-        ->with($this->command->userId, $this->command->startDate, $this->command->endDate)
+        ->shouldReceive('hasBookingConflict')
+        ->with($this->command->userId, $this->command->carId, $this->command->startDate, $this->command->endDate)
         ->andReturnFalse();
     
     // Mock price calculation
@@ -96,34 +95,12 @@ test('throws exception when car is not found', function () {
     // Arrange
     $this->carService
         ->shouldReceive('findCarById')
-        ->with($this->command->carId)
+        ->with($this->car->id)
         ->andReturnNull();
-        
+       
     // Assert & Act
     expect(fn () => $this->handler->handle($this->command))
         ->toThrow(CarNotFoundException::class);
-})
-->group('create_booking_handler');
-
-test('throws exception when car is not available', function () {
-    // Arrange
-    $unavailableCar = new CarSnapshot(
-        id: $this->command->carId,
-        brand: faker()->word(),
-        model: faker()->word(),
-        year: (int) faker()->year(),
-        pricePerDay: fakeMoney(),
-        isAvailable: false
-    );
-    
-    $this->carService
-        ->shouldReceive('findCarById')
-        ->with($this->command->carId)
-        ->andReturn($unavailableCar);
-
-    // Assert & Act
-    expect(fn () => $this->handler->handle($this->command))
-        ->toThrow(CarNotAvailableException::class);
 })
 ->group('create_booking_handler');
 
@@ -135,8 +112,8 @@ test('throws exception when booking dates conflict', function () {
         ->andReturn($this->car);
     
     $this->bookingService
-        ->shouldReceive('isConflictWithOtherBookings')
-        ->with($this->command->userId, $this->command->startDate, $this->command->endDate)
+        ->shouldReceive('hasBookingConflict')
+        ->with($this->command->userId, $this->command->carId, $this->command->startDate, $this->command->endDate)
         ->andReturnTrue();
       
     // Assert & Act

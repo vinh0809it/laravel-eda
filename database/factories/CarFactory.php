@@ -29,15 +29,7 @@ class CarFactory extends Factory
             'brand' => fake()->name(),
             'model' => fake()->name(),
             'year' => fake()->year(),
-            'price_per_day' => fake()->randomFloat(2, 100, 1000),
-            'is_available' => true,
+            'price_per_day' => fake()->randomFloat(2, 100, 1000)
         ];
-    }
-
-    public function unavailable(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'is_available' => false,
-        ]);
     }
 }

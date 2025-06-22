@@ -8,7 +8,6 @@ use Src\Domain\Car\Services\ICarService;
 use Src\Domain\Pricing\Services\IPriceService;
 use Src\Application\Shared\Interfaces\ICommand;
 use Src\Application\Shared\Interfaces\ICommandHandler;
-use Src\Domain\Car\Exceptions\CarNotAvailableException;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Booking\Exceptions\BookingConflictException;
 use Src\Application\Booking\DTOs\BookingResponseDTO;
@@ -40,21 +39,17 @@ class CreateBookingCommandHandler implements ICommandHandler
             );
         }
 
-        if (!$car->isAvailable) {
-            throw new CarNotAvailableException(
-                trace: ['carId' => $command->carId]
-            );
-        }
-
         // Validate no booking conflicts
-        if ($this->bookingService->isConflictWithOtherBookings(
+        if ($this->bookingService->hasBookingConflict(
             $command->userId,
+            $command->carId,
             $command->startDate,
             $command->endDate
         )) {
             throw new BookingConflictException(
                 trace: [
                     'userId' => $command->userId,
+                    'carId' => $command->carId,
                     'startDate' => $command->startDate->toDateString(),
                     'endDate' => $command->endDate->toDateString()
                 ]
@@ -67,7 +62,7 @@ class CreateBookingCommandHandler implements ICommandHandler
             model: $car->model,
             year: $car->year,
             pricePerDay: $car->pricePerDay,
-            isAvailable: $car->isAvailable
+            bookedCount: $car->bookedCount
         );
         
         // Calculate original price using PriceService
