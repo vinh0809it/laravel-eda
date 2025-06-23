@@ -3,6 +3,7 @@
 namespace Src\Domain\Booking\Aggregates;
 
 use Carbon\Carbon;
+use Exception;
 use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Shared\Aggregate\AggregateRoot;
@@ -115,40 +116,50 @@ class BookingAggregate extends AggregateRoot
 
     public function apply(IDomainEvent $event): void
     {   
-        if ($event instanceof BookingCreated) {
-            
-            $this->id = $event->bookingId;
-            $this->carId = $event->carId;
-            $this->userId = $event->userId;
-            $this->startDate = $event->startDate;
-            $this->endDate = $event->endDate;
-            $this->originalPrice = $event->originalPrice;
-            $this->status = BookingStatus::CREATED->value;
+        $method = 'apply' . class_basename($event);
 
-        }else if ($event instanceof BookingChanged) {
-
-            $this->startDate = $event->newStartDate;
-            $this->endDate = $event->newEndDate;
-            $this->originalPrice = $event->newOriginalPrice;
-            $this->status = BookingStatus::CHANGED->value;
-
-        }else if ($event instanceof BookingCompleted) {
-
-            $this->actualEndDate = $event->actualEndDate;
-            $this->finalPrice = $event->finalPrice;
-            $this->completionNote = $event->completionNote;
-            $this->status = BookingStatus::COMPLETED->value;
-
-        }else if ($event instanceof BookingCanceled) {
-
-            $this->canceledAt = $event->canceledAt;
-            $this->cancelReason = $event->cancelReason;
-            $this->status = BookingStatus::CANCELED->value;
+        if(!method_exists($this, $method)) {
+           throw new Exception("Missing apply method for " . get_class($event));
         }
 
+        $this->$method($event);
         $this->incrementVersion();
     }
     
+    protected function applyBookingCreated(BookingCreated $event): void
+    {
+        $this->id = $event->bookingId;
+        $this->carId = $event->carId;
+        $this->userId = $event->userId;
+        $this->startDate = $event->startDate;
+        $this->endDate = $event->endDate;
+        $this->originalPrice = $event->originalPrice;
+        $this->status = BookingStatus::CREATED->value;
+    }
+
+    protected function applyBookingChanged(BookingChanged $event): void
+    {
+        $this->startDate = $event->newStartDate;
+        $this->endDate = $event->newEndDate;
+        $this->originalPrice = $event->newOriginalPrice;
+        $this->status = BookingStatus::CHANGED->value;
+    }
+
+    protected function applyBookingCompleted(BookingCompleted $event): void
+    {
+        $this->actualEndDate = $event->actualEndDate;
+        $this->finalPrice = $event->finalPrice;
+        $this->completionNote = $event->completionNote;
+        $this->status = BookingStatus::COMPLETED->value;
+    }
+
+    protected function applyBookingCanceled(BookingCanceled $event): void
+    {
+        $this->canceledAt = $event->canceledAt;
+        $this->cancelReason = $event->cancelReason;
+        $this->status = BookingStatus::CANCELED->value;
+    }
+
     private function assertNotTerminateState(): void
     {
         if ($this->status === BookingStatus::CANCELED->value) {
