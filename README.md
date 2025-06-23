@@ -36,11 +36,15 @@ Domain-Driven Design helps keep business logic at the core, with clear boundarie
 **Why Clean Architecture?**  
 It enforces separation of concerns, making the system more modular and adaptable to change.
 
-**Feedback is welcome!**  
-If you spot any issues, have suggestions, or want to discuss architecture, please open an issue or contact me directly.
+## ⭐ Feedback & Contribution
+
+I'm eager to learn and improve!  
+If you have suggestions, spot issues, or want to discuss architecture, please open an issue or contact me.
 
 Email: vinh0809it@gmail.com  
 Facebook: [vinh0809it](https://www.facebook.com/vinh0809it/)
+
+If you find this project useful, please give it a star ⭐ or leave a comment!
 
 ---
 
@@ -123,15 +127,6 @@ Route → Controller
 
 - **Unit tests** for aggregates, services, and event logic
 - **Feature tests** for API endpoints, use case flows and projection updates
-
----
-
-## ⭐ Feedback & Contribution
-
-I'm eager to learn and improve!  
-If you have suggestions, spot issues, or want to discuss architecture, please open an issue or contact me.
-
-If you find this project useful, please give it a star ⭐ or leave a comment!
 
 ---
 
