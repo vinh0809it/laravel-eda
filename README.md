@@ -3,9 +3,8 @@
 </h1>
 
 <p align="center">
-    <a href="https://laravel.com/"><img src="https://img.shields.io/badge/Laravel-10-FF2D20.svg?style=flat&logo=laravel" alt="Laravel 12"/></a>
-    <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.1-777BB4.svg?style=flat&logo=php" alt="PHP 8.2"/></a>
-    <a href="#"><img src="https://github.com/yourusername/yourrepo/actions/workflows/laravel-tests.yml/badge.svg" alt="GithubActions"/></a>
+    <a href="https://laravel.com/"><img src="https://img.shields.io/badge/Laravel-12-FF2D20.svg?style=flat&logo=laravel" alt="Laravel 12"/></a>
+    <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.2-777BB4.svg?style=flat&logo=php" alt="PHP 8.2"/></a>
 </p>
 
 ## 🚀 Current Features
