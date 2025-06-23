@@ -14,7 +14,7 @@ return new class extends Migration
         // DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
 
         Schema::create('cars', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('(uuid_generate_v4())'));
+            $table->uuid('id')->primary();
             $table->string('brand');
             $table->string('model');
             $table->integer('year');
