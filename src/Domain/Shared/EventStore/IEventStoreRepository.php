@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Domain\Shared\Repositories;
+namespace Src\Domain\Shared\EventStore;
 
 interface IEventStoreRepository
 {

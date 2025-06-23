@@ -9,7 +9,8 @@ use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Infrastructure\Exceptions\UnknownEventException;
 
-class EventMap {
+class EventMap
+{
     protected static array $map = [
         'BookingCreated' => BookingCreated::class,
         'BookingChanged' => BookingChanged::class,

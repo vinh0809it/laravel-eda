@@ -4,7 +4,7 @@ namespace Src\Infrastructure\EventStore\Repositories;
 
 use Illuminate\Support\Str;
 use Src\Infrastructure\EventStore\Models\EventStore;
-use Src\Domain\Shared\Repositories\IEventStoreRepository;
+use Src\Domain\Shared\EventStore\IEventStoreRepository;
 
 class EventStoreRepository implements IEventStoreRepository
 {

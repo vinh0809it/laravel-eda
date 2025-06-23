@@ -1,19 +1,17 @@
 <?php
 
-namespace Src\Application\Shared\Traits;
+namespace Src\Domain\Shared\Services;
 
 use Src\Domain\Shared\Aggregate\AggregateRoot;
-use Src\Domain\Shared\Repositories\IEventStoreRepository;
-use Src\Infrastructure\EventStore\Map\EventMap;
+use Src\Domain\Shared\EventStore\IEventMapper;
+use Src\Domain\Shared\EventStore\IEventStoreRepository;
 
-trait ShouldAppendEvent
+abstract class EventSourcingHandler
 {
-    protected IEventStoreRepository $eventStore;
-
-    public function setEventStore(IEventStoreRepository $eventStore): void
-    {
-        $this->eventStore = $eventStore;
-    }
+    public function __construct(
+        protected IEventStoreRepository $eventStore,
+        protected IEventMapper $eventMapper
+    ) {}
 
     protected function persistAggregate(AggregateRoot $aggregate): void
     {
@@ -42,7 +40,7 @@ trait ShouldAppendEvent
         );
 
         $events = array_map(function ($event) {
-            $eventType = EventMap::resolve($event['event_type']);
+            $eventType = $this->eventMapper->resolve($event['event_type']);
             return $eventType::fromArray($event['event_data']);
         }, $events);
 

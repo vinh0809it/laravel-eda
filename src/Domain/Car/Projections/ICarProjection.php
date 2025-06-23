@@ -14,5 +14,6 @@ interface ICarProjection extends IBaseProjection
     public function onBookingChanged(BookingChanged $event): void;
     public function onBookingCompleted(BookingCompleted $event): void;
     public function increaseBookedCount(string $id): void;
+    public function decreaseBookedCount(string $id): void;
     public function updateLastBookingCompletedAt(string $id, Carbon $completedAt): void;
 } 

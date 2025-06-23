@@ -14,8 +14,7 @@ class PaginationDTO implements IPaginationResult
         public readonly int $perPage,
         public readonly int $total,
         public readonly int $lastPage
-    ) 
-    {}
+    ) {}
 
     public function items(): array
     {

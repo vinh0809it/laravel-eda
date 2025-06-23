@@ -2,6 +2,7 @@
 
 namespace Src\Presentation\Booking\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Dispatcher;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -20,8 +21,8 @@ class BookingController extends Controller
         $command = new CreateBookingCommand(
             carId: $request->car_id,
             userId: Auth::id(),
-            startDate: $request->start_date,
-            endDate: $request->end_date,
+            startDate: Carbon::parse($request->start_date),
+            endDate: Carbon::parse($request->end_date),
         );
 
         $booking = $this->bus->dispatch($command);

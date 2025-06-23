@@ -12,6 +12,5 @@ final class AdditionalPriceCalculationDTO
         public readonly float $pricePerDay,
         public readonly Carbon $endDate,
         public readonly Carbon $actualEndDate
-    ) {
-    }
+    ) {}
 }

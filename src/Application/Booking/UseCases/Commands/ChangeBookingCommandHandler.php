@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Application\Booking\UseCases\Commands;
 
-use Carbon\Carbon;
 use Src\Domain\Booking\Aggregates\BookingAggregate;
 use Src\Domain\Booking\Services\IBookingService;
 use Src\Domain\Car\Services\ICarService;
