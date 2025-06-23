@@ -23,7 +23,7 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
     public function hasBookingConflict(string $userId, string $carId, Carbon $startDate, Carbon $endDate): bool
     { 
         return $this->model->whereBetween('start_date', [$startDate, $endDate])
-            ->where('status', '<>', BookingStatus::CANCELLED->value)
+            ->where('status', '<>', BookingStatus::CANCELED->value)
             ->where('start_date', '<=', $endDate)
             ->where('end_date', '>=', $startDate)
             ->where(function ($q) use ($userId, $carId) {

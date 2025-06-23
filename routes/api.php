@@ -20,6 +20,7 @@ Route::middleware('api')->group(function () {
             Route::post('bookings', [BookingController::class, 'store']);
             Route::patch('bookings/{bookingId}', [BookingController::class, 'update']);
             Route::post('bookings/{bookingId}/complete', [BookingController::class, 'complete']);
+            Route::post('bookings/{bookingId}/cancel', [BookingController::class, 'cancel']);
         });
     });
 });

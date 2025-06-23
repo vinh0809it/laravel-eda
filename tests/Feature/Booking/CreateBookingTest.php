@@ -6,6 +6,7 @@ namespace Tests\Feature\Booking;
 
 use Src\Infrastructure\Car\Models\Car;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Src\Domain\Booking\Enums\BookingStatus;
 use Src\Domain\Shared\Enums\HttpStatusCode;
 use Src\Infrastructure\Booking\Models\Booking;
 use Src\Infrastructure\User\ReadModels\User;
@@ -58,7 +59,7 @@ test('creates a booking successfully', function () {
         'start_date' => $startDate,
         'end_date' => $endDate,
         'original_price' => 500.00,
-        'status' => 'created'
+        'status' => BookingStatus::CREATED->value
     ]);
 
     // Verify the event was dispatched by checking its side effects

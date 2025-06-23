@@ -2,9 +2,9 @@
 
 namespace Src\Infrastructure\Exceptions;
 
-use Src\Domain\Shared\Exceptions\BussinessException;
+use Exception;
 
-class UnknownEventException extends BussinessException
+class UnknownEventException extends Exception
 {
     public function __construct(
         string $message = "Unknown event",

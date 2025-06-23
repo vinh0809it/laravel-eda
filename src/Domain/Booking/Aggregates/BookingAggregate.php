@@ -7,6 +7,7 @@ use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Shared\Aggregate\AggregateRoot;
 use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Booking\Events\BookingCanceled;
 use Src\Domain\Booking\Events\BookingChanged;
 use Src\Domain\Shared\Enums\HttpStatusCode;
 use Src\Domain\Shared\Events\IDomainEvent;
@@ -24,6 +25,9 @@ class BookingAggregate extends AggregateRoot
     private Carbon $actualEndDate;
     private float $originalPrice;
     private float $finalPrice;
+    private string $completionNote;
+    private Carbon $canceledAt;
+    private string $cancelReason;
     private string $status;
 
     public static function create(
@@ -53,12 +57,7 @@ class BookingAggregate extends AggregateRoot
 
      public function change(Carbon $newStartDate, Carbon $newEndDate, float $newOriginalPrice): void
     {
-        if ($this->status === BookingStatus::COMPLETED->value) {
-            throw new BussinessException(
-                message: 'Booking is already completed!',
-                code: HttpStatusCode::CONFLICT->value
-            );
-        }
+        $this->assertNotTerminateState();
 
         $event = new BookingChanged(
             bookingId: $this->id,
@@ -71,21 +70,32 @@ class BookingAggregate extends AggregateRoot
         $this->apply($event);
     }
 
-    public function complete(Carbon $actualEndDate, float $additionalPrice, float $finalPrice): void
+    public function complete(Carbon $actualEndDate, float $additionalPrice, float $finalPrice, string $completionNote): void
     {
-        if ($this->status === BookingStatus::COMPLETED->value) {
-            throw new BussinessException(
-                message: 'Booking is already completed!',
-                code: HttpStatusCode::CONFLICT->value
-            );
-        }
+        $this->assertNotTerminateState();
 
         $event = new BookingCompleted(
             bookingId: $this->id,
             carId: $this->carId,
             actualEndDate: $actualEndDate,
             additionalPrice: $additionalPrice,
-            finalPrice: $finalPrice
+            finalPrice: $finalPrice,
+            completionNote: $completionNote
+        );
+
+        $this->recordEvent($event);
+        $this->apply($event);
+    }
+
+    public function cancel(Carbon $canceledAt, string $cancelReason): void
+    {
+        $this->assertNotTerminateState();
+
+        $event = new BookingCanceled(
+            bookingId: $this->id,
+            carId: $this->carId,
+            canceledAt: $canceledAt,
+            cancelReason: $cancelReason
         );
 
         $this->recordEvent($event);
@@ -126,13 +136,36 @@ class BookingAggregate extends AggregateRoot
 
             $this->actualEndDate = $event->actualEndDate;
             $this->finalPrice = $event->finalPrice;
+            $this->completionNote = $event->completionNote;
             $this->status = BookingStatus::COMPLETED->value;
 
+        }else if ($event instanceof BookingCanceled) {
+
+            $this->canceledAt = $event->canceledAt;
+            $this->cancelReason = $event->cancelReason;
+            $this->status = BookingStatus::CANCELED->value;
         }
 
         $this->incrementVersion();
     }
     
+    private function assertNotTerminateState(): void
+    {
+        if ($this->status === BookingStatus::CANCELED->value) {
+            throw new BussinessException(
+                message: 'Booking is already canceled!',
+                code: HttpStatusCode::CONFLICT->value
+            );
+        }
+
+        if ($this->status === BookingStatus::COMPLETED->value) {
+            throw new BussinessException(
+                message: 'Booking is already completed!',
+                code: HttpStatusCode::CONFLICT->value
+            );
+        }
+    }
+
     public function getId(): string
     {
         return $this->id;
@@ -171,6 +204,21 @@ class BookingAggregate extends AggregateRoot
     public function getFinalPrice(): float
     {
         return $this->finalPrice;
+    }
+
+    public function getCanceledAt(): Carbon
+    {
+        return $this->canceledAt;
+    }
+
+    public function getCancelReason(): string
+    {
+        return $this->cancelReason;
+    }
+
+    public function getCompletionNote(): string
+    {
+        return $this->completionNote;
     }
 
     public function getStatus(): string

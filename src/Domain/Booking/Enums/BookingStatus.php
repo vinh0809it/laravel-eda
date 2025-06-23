@@ -6,7 +6,7 @@ enum BookingStatus: string
 {
     case CREATED = 'created';
     case CHANGED = 'changed';
-    case CANCELLED = 'cancelled';
+    case CANCELED = 'canceled';
     case COMPLETED = 'completed';
 
     public function label(): string
@@ -14,7 +14,7 @@ enum BookingStatus: string
         return match ($this) {
             self::CREATED => 'Created',
             self::CHANGED => 'Changed', 
-            self::CANCELLED => 'Cancelled',
+            self::CANCELED => 'Canceled',
             self::COMPLETED => 'Completed',
         };
     }

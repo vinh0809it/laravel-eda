@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Src\Application\Booking\UseCases\Queries;
 
 use Src\Application\Shared\Interfaces\IQuery;
-use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 use Src\Domain\Shared\Interfaces\IPaginationResult;
 use Src\Domain\Booking\Services\IBookingService;
 use Src\Application\Shared\Interfaces\IQueryHandler;
@@ -14,8 +13,7 @@ class GetBookingsQueryHandler implements IQueryHandler
 {
     public function __construct(
         private readonly IBookingService $bookingService
-    ) 
-    {}
+    ) {}
 
     public function handle(IQuery $query): IPaginationResult
     {

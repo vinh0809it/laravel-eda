@@ -3,6 +3,7 @@
 namespace Src\Infrastructure\Car\Projections;
 
 use Carbon\Carbon;
+use Src\Domain\Booking\Events\BookingCanceled;
 use Src\Domain\Booking\Events\BookingChanged;
 use Src\Infrastructure\Car\Models\Car;
 use Src\Infrastructure\Shared\Projections\BaseProjection;
@@ -20,6 +21,11 @@ class CarProjection extends BaseProjection implements ICarProjection
         parent::__construct($model);
     }
 
+    /**
+     * @param BookingCreated $event
+     * 
+     * @return void
+     */
     public function onBookingCreated(BookingCreated $event): void
     {
         $loggerContext = $this->context(__FUNCTION__);
@@ -33,6 +39,11 @@ class CarProjection extends BaseProjection implements ICarProjection
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
+    /**
+     * @param BookingCompleted $event
+     * 
+     * @return void
+     */
     public function onBookingCompleted(BookingCompleted $event): void
     {
         $loggerContext = $this->context(__FUNCTION__);
@@ -46,6 +57,11 @@ class CarProjection extends BaseProjection implements ICarProjection
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
+    /**
+     * @param BookingChanged $event
+     * 
+     * @return void
+     */
     public function onBookingChanged(BookingChanged $event): void
     {
         $loggerContext = $this->context(__FUNCTION__);
@@ -60,11 +76,45 @@ class CarProjection extends BaseProjection implements ICarProjection
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
+    public function onBookingCanceled(BookingCanceled $event): void
+    {
+        $loggerContext = $this->context(__FUNCTION__);
+
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
+            return;
+        }
+
+        $this->decreaseBookedCount($event->carId);
+
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
+    }
+
+    /**
+     * @param string $id
+     * 
+     * @return void
+     */
     public function increaseBookedCount(string $id): void
     {
         $this->model->where('id', $id)->increment('booked_count');
     }
 
+    /**
+     * @param string $id
+     * 
+     * @return void
+     */
+    public function decreaseBookedCount(string $id): void
+    {
+        $this->model->where('id', $id)->decrement('booked_count');
+    }
+
+    /**
+     * @param string $id
+     * @param Carbon $completedAt
+     * 
+     * @return void
+     */
     public function updateLastBookingCompletedAt(string $id, Carbon $completedAt): void
     {
         $this->model->where('id', $id)->update([

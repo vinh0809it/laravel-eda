@@ -35,13 +35,15 @@ beforeEach(function () {
     app(EventSourcingService::class)->save($aggregate);
 });
 
-test('test completes a booking successfully', function () {
+test('test cancels a booking successfully', function () {
     // Arrange
+    $cancelReason = faker()->sentence();
+
     $payload = [
-        'completion_note' => faker()->sentence()
+        'cancel_reason' => $cancelReason
     ];
 
-    $endpoint = '/api/v1/bookings/' . $this->bookingId . '/complete';
+    $endpoint = '/api/v1/bookings/' . $this->bookingId . '/cancel';
 
     // Act
     $response = $this->withToken($this->token)->postJson($endpoint, $payload);
@@ -55,10 +57,9 @@ test('test completes a booking successfully', function () {
                 'user_id',
                 'start_date',
                 'end_date',
-                'actual_end_date',
                 'original_price',
-                'final_price',
-                'completion_note',
+                'canceled_at',
+                'cancel_reason',
                 'status'
             ]
         ]);
@@ -67,23 +68,25 @@ test('test completes a booking successfully', function () {
         'id' => $this->bookingId,
         'car_id' => $this->car->id,
         'user_id' => $this->user->id,
-        'status' => BookingStatus::COMPLETED->value
+        'canceled_at' => now()->toDateTimeString(),
+        'cancel_reason' => $cancelReason,
+        'status' => BookingStatus::CANCELED->value
     ]);
 
     $this->assertDatabaseHas('cars', [
         'id' => $this->car->id,
-        'last_booking_completed_at' => now()->toDateTimeString()
+        'booked_count' => 0
     ]);
 })
-->group('complete_booking_integration');
+->group('cancel_booking_integration');
 
-test('test fails to complete a booking with wrong booking id', function () {
+test('test fails to cancel a booking with wrong booking id', function () {
     // Arrange
     $payload = [
-        'completion_note' => faker()->sentence()
+        'cancel_reason' => faker()->sentence()
     ];
     
-    $endpoint = '/api/v1/bookings/' . fakeUuid() . '/complete';
+    $endpoint = '/api/v1/bookings/' . fakeUuid() . '/cancel';
 
     // Act
     $response = $this->withToken($this->token)->postJson($endpoint, $payload);
@@ -96,4 +99,4 @@ test('test fails to complete a booking with wrong booking id', function () {
         httpStatusCode: HttpStatusCode::NOT_FOUND->value
     );
 })
-->group('complete_booking_integration');
+->group('cancel_booking_integration');

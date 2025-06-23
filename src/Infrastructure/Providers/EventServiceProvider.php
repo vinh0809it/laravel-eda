@@ -3,9 +3,11 @@
 namespace Src\Infrastructure\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Src\Application\Booking\Listeners\BookingCanceledListener;
 use Src\Application\Booking\Listeners\BookingChangedListener;
 use Src\Application\Booking\Listeners\BookingCompletedListener;
 use Src\Application\Booking\Listeners\BookingCreatedListener;
+use Src\Domain\Booking\Events\BookingCanceled;
 use Src\Domain\Booking\Events\BookingChanged;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Booking\Events\BookingCreated;
@@ -29,6 +31,11 @@ class EventServiceProvider extends ServiceProvider
             BookingChangedListener::class, 
             [BookingProjection::class, 'onBookingChanged'],
             [CarProjection::class, 'onBookingChanged'],
+        ],
+        BookingCanceled::class => [
+            BookingCanceledListener::class, 
+            [BookingProjection::class, 'onBookingCanceled'],
+            [CarProjection::class, 'onBookingCanceled'],
         ],
     ];
 

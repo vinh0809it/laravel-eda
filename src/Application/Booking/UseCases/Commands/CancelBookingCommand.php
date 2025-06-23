@@ -6,10 +6,10 @@ namespace Src\Application\Booking\UseCases\Commands;
 
 use Src\Application\Shared\Interfaces\ICommand;
 
-final class CompleteBookingCommand implements ICommand
+final class CancelBookingCommand implements ICommand
 {
     public function __construct(
         public readonly string $bookingId,
-        public readonly string $completionNote
+        public readonly string $cancelReason
     ) {}
 } 

@@ -7,20 +7,18 @@ namespace Src\Domain\Booking\Events;
 use Carbon\Carbon;
 use Src\Domain\Shared\Events\IDomainEvent;
 
-final class BookingCompleted implements IDomainEvent
+final class BookingCanceled implements IDomainEvent
 {
     public function __construct(
         public readonly string $bookingId,
         public readonly string $carId,
-        public readonly Carbon $actualEndDate,
-        public readonly float $additionalPrice,
-        public readonly float $finalPrice,
-        public readonly string $completionNote
+        public readonly Carbon $canceledAt,
+        public readonly string $cancelReason
     ) {}
 
     public function getEventType(): string
     {
-        return 'BookingCompleted';
+        return 'BookingCanceled';
     }
 
     public function getAggregateType(): string
@@ -38,22 +36,19 @@ final class BookingCompleted implements IDomainEvent
         return [
             'booking_id' => $this->bookingId,
             'car_id' => $this->carId,
-            'actual_end_date' => $this->actualEndDate->toDateString(),
-            'additional_price' => $this->additionalPrice,
-            'final_price' => $this->finalPrice,
-            'completion_note' => $this->completionNote
+            'canceled_at' => $this->canceledAt,
+            'cancel_reason' => $this->cancelReason
         ];
     }
 
     public static function fromArray(array $data): self
     {
+        $canceledAt = Carbon::parse($data['canceled_at']);
         return new self(
             bookingId: $data['booking_id'],
             carId: $data['car_id'],
-            actualEndDate: Carbon::parse($data['actual_end_date']),
-            additionalPrice: $data['additional_price'],
-            finalPrice: $data['final_price'],
-            completionNote: $data['completion_note']
+            canceledAt: $canceledAt,
+            cancelReason: $data['cancel_reason']
         );
     }
 } 

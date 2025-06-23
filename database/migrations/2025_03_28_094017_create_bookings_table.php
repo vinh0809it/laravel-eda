@@ -20,12 +20,10 @@ return new class extends Migration
             $table->date('actual_end_date')->nullable();
             $table->decimal('original_price', 10, 2);
             $table->decimal('final_price', 10, 2)->nullable();
+            $table->text('completion_note')->nullable();
             $table->string('status')->default('created'); // created, cancelled, completed
-            $table->string('cancellation_reason')->nullable();
-            $table->foreignId('cancelled_by')->nullable()->constrained('users');
-            $table->timestamp('cancelled_at')->nullable();
-            $table->timestamp('completed_at')->nullable();
-            $table->text('completion_notes')->nullable();
+            $table->string('cancel_reason')->nullable();
+            $table->timestamp('canceled_at')->nullable();
             $table->timestamps();
             $table->softDeletes(); 
         });

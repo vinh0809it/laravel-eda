@@ -14,25 +14,25 @@ abstract class BaseProjection implements IBaseProjection
 
     protected function context(string $method): string
     {
-        return self::class . '::' . $method;
+        return static::class . '::' . $method;
     }
 
-    public function findById(string $id)
+    public function findById(string $id): Model
     {
         return $this->model->find($id);
     }
 
-    public function create(array $data)
+    public function create(array $data): Model
     {
         return $this->model->create($data);
     }
 
-    public function update(string $id, array $data)
+    public function update(string $id, array $data): bool
     {
         return $this->model->where('id', $id)->update($data);
     }
 
-    public function delete(string $id)
+    public function delete(string $id): bool
     {
         return $this->model->where('id', $id)->delete();
     }

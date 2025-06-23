@@ -5,23 +5,21 @@ declare(strict_types=1);
 namespace Tests\Unit\Application\Booking\Listeners;
 
 use Illuminate\Support\Facades\Log;
-use Src\Application\Booking\Listeners\BookingCompletedListener;
-use Src\Domain\Booking\Events\BookingCompleted;
+use Src\Application\Booking\Listeners\BookingCanceledListener;
+use Src\Domain\Booking\Events\BookingCanceled;
 
 beforeEach(function () {
     $this->faker = \Faker\Factory::create();
-    $this->listener = new BookingCompletedListener();
+    $this->listener = new BookingCanceledListener();
 });
 
-test('listener logs booking completion event', function () {
+test('listener logs booking cancelation event', function () {
     // Arrange
-    $event = new BookingCompleted(
+    $event = new BookingCanceled(
         bookingId: fakeUuid(),
         carId: fakeUuid(),
-        actualEndDate: fakeDateFromNow(),
-        additionalPrice: fakeMoney(),
-        finalPrice: fakeMoney(),
-        completionNote: faker()->sentence()
+        canceledAt: now(),
+        cancelReason: faker()->sentence()
     );
 
     // Assert log will be called
@@ -30,9 +28,8 @@ test('listener logs booking completion event', function () {
         ->with('Booking completed', [
             'booking_id' => $event->bookingId,
             'car_id' => $event->carId,
-            'actual_end_date' => $event->actualEndDate,
-            'additional_price' => $event->additionalPrice,
-            'final_price' => $event->finalPrice
+            'canceled_at' => $event->canceledAt,
+            'cancel_reason' => $event->cancelReason
         ]);
 
     // Act

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Carbon\Carbon;
 use Src\Domain\Booking\Aggregates\BookingAggregate;
 use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Booking\Events\BookingCanceled;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingChanged;
@@ -54,15 +55,18 @@ test('aggregate completes a booking and records a BookingCompleted event', funct
     $actualEndDate = Carbon::parse($this->endDate)->addDays(1);
     $additionalPrice = fakeMoney();
     $finalPrice = fakeMoney();
+    $completionNote = faker()->sentence();
 
     $aggregate->complete(
         actualEndDate: $actualEndDate,
         additionalPrice: $additionalPrice,
-        finalPrice: $finalPrice
+        finalPrice: $finalPrice,
+        completionNote: $completionNote
     );
 
     expect($aggregate->getStatus())->toBe(BookingStatus::COMPLETED->value)
         ->and($aggregate->getActualEndDate()->toDateString())->toBe($actualEndDate->toDateString())
+        ->and($aggregate->getCompletionNote())->toBe($completionNote)
         ->and($aggregate->getFinalPrice())->toBe($finalPrice);
 
     $events = $aggregate->getRecordedEvents();
@@ -84,18 +88,21 @@ test('test aggregate can not complete the booking which is completed', function 
     $actualEndDate = Carbon::parse($this->endDate)->addDays(1);
     $additionalPrice = fakeMoney();
     $finalPrice = fakeMoney();
+    $completionNote = faker()->sentence();
 
     $aggregate->complete(
         actualEndDate: $actualEndDate,
         additionalPrice: $additionalPrice,
-        finalPrice: $finalPrice
+        finalPrice: $finalPrice,
+        completionNote: $completionNote
     );
 
     expect(fn () => 
         $aggregate->complete(
             actualEndDate: $actualEndDate,
             additionalPrice: $additionalPrice,
-            finalPrice: $finalPrice
+            finalPrice: $finalPrice,
+            completionNote: $completionNote
         )
     )->toThrow(function (BussinessException $e) {
         expect($e->getCode())->toBe(HttpStatusCode::CONFLICT->value);
@@ -136,12 +143,41 @@ test('test aggregate changes a booking and records a BookingChanged event', func
 })
 ->group('booking_aggregate');
 
+test('test aggregate cancels a booking and records a BookingCanceled event', function () {
+
+    $aggregate = BookingAggregate::create(
+        id: $this->bookingId,
+        carId: $this->carId,            
+        userId: $this->userId,
+        startDate: $this->startDate,
+        endDate: $this->endDate,
+        originalPrice: $this->originalPrice
+    );
+
+    $canceledAt = now();
+    $reason = faker()->sentence();
+
+    $aggregate->cancel(
+        canceledAt: $canceledAt,
+        cancelReason: $reason
+    );
+
+    expect($aggregate->getStatus())->toBe(BookingStatus::CANCELED->value)
+        ->and($aggregate->getCanceledAt()->toDatetimeString())->toBe($canceledAt->toDateTimeString())
+        ->and($aggregate->getCancelReason())->toBe($reason);
+
+    $events = $aggregate->getRecordedEvents();
+    expect($events)->toHaveCount(2)
+                   ->and($events[1])->toBeInstanceOf(BookingCanceled::class);
+})
+->group('booking_aggregate');
 
 test('test aggregate rebuilds aggregate state from events', function () {
 
     $actualEndDate = Carbon::parse($this->endDate)->addDays(1);
     $additionalPrice = fakeMoney();
     $finalPrice = fakeMoney();
+    $completionNote = faker()->sentence();
 
     $events = [
         new BookingCreated(
@@ -157,7 +193,8 @@ test('test aggregate rebuilds aggregate state from events', function () {
             carId: $this->carId,
             actualEndDate: $actualEndDate,
             additionalPrice: $additionalPrice,
-            finalPrice: $finalPrice
+            finalPrice: $finalPrice,
+            completionNote: $completionNote
         )
     ];
 
@@ -165,6 +202,7 @@ test('test aggregate rebuilds aggregate state from events', function () {
 
     expect($aggregate->getStatus())->toBe(BookingStatus::COMPLETED->value)
         ->and($aggregate->getFinalPrice())->toBe($finalPrice)
-        ->and($aggregate->getActualEndDate()->toDateString())->toBe($actualEndDate->toDateString());
+        ->and($aggregate->getActualEndDate()->toDateString())->toBe($actualEndDate->toDateString())
+        ->and($aggregate->getVersion())->toBe(2);
 })
 ->group('booking_aggregate');

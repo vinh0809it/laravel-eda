@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Application\Booking\UseCases\Queries;
 
-use Src\Domain\Booking\ValueObjects\BookingId;
 use Src\Application\Shared\Interfaces\IQuery;
 
 class GetBookingsQuery implements IQuery
 {
     public function __construct(
+        private readonly string $userId,
         private readonly ?int $page = 1,
         private readonly ?int $perPage = 10,
         private readonly ?string $sortBy = 'created_at',
@@ -17,10 +17,8 @@ class GetBookingsQuery implements IQuery
         private readonly ?string $bookingId = null,
         private readonly ?string $startDate = null,
         private readonly ?string $endDate = null,
-        private readonly ?string $status = null,
-        private readonly string $userId
-    ) {
-    }
+        private readonly ?string $status = null
+    ) {}
 
     public function getPage(): int
     {
@@ -62,7 +60,7 @@ class GetBookingsQuery implements IQuery
         return $this->status;
     }
 
-    public function getUserId(): ?string
+    public function getUserId(): string
     {
         return $this->userId;
     }

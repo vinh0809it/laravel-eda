@@ -8,6 +8,7 @@ use Src\Domain\Booking\Projections\IBookingProjection;
 use Src\Domain\Booking\Events\BookingCreated;
 use Src\Domain\Booking\Events\BookingCompleted;
 use Src\Domain\Booking\Enums\BookingStatus;
+use Src\Domain\Booking\Events\BookingCanceled;
 use Src\Domain\Booking\Events\BookingChanged;
 use Src\Domain\Shared\Loggers\IEventProcessLogger;
 
@@ -20,9 +21,14 @@ class BookingProjection extends BaseProjection implements IBookingProjection
         parent::__construct($model);
     }
 
+    /**
+     * @param BookingCreated $event
+     * 
+     * @return void
+     */
     public function onBookingCreated(BookingCreated $event): void
     {
-        $loggerContext = self::class . '::onBookingCreated';
+        $loggerContext = $this->context(__FUNCTION__);
 
         if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
@@ -41,9 +47,15 @@ class BookingProjection extends BaseProjection implements IBookingProjection
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
+    /**
+     * @param BookingCompleted $event
+     * 
+     * @return void
+     */
     public function onBookingCompleted(BookingCompleted $event): void
     {
-        $loggerContext = self::class . '::onBookingCompleted';
+        $loggerContext = $this->context(__FUNCTION__);
+
         if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
         }
@@ -57,15 +69,22 @@ class BookingProjection extends BaseProjection implements IBookingProjection
         
         $booking->actual_end_date = $event->actualEndDate;
         $booking->final_price = $event->finalPrice;
+        $booking->completion_note = $event->completionNote;
         $booking->status = BookingStatus::COMPLETED->value;
         $booking->save();
 
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
 
+    /**
+     * @param BookingChanged $event
+     * 
+     * @return void
+     */
     public function onBookingChanged(BookingChanged $event): void
     {
-        $loggerContext = self::class . '::onBookingChanged';
+        $loggerContext = $this->context(__FUNCTION__);
+        
         if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
             return;
         }
@@ -85,4 +104,32 @@ class BookingProjection extends BaseProjection implements IBookingProjection
 
         $this->logger->markSuccess($event->bookingId, $loggerContext);
     }
-} 
+
+    /**
+     * @param BookingCanceled $event
+     * 
+     * @return void
+     */
+    public function onBookingCanceled(BookingCanceled $event): void
+    {
+        $loggerContext = $this->context(__FUNCTION__);
+
+        if ($this->logger->hasProcessed($event->bookingId, $loggerContext)) {
+            return;
+        }
+
+        $booking = $this->model->find($event->bookingId);
+
+        if(!$booking) {
+            $this->logger->markFailure($event->bookingId, $loggerContext, 'Booking not found for cancelation');
+            return;
+        }
+        
+        $booking->canceled_at = $event->canceledAt;
+        $booking->cancel_reason = $event->cancelReason;
+        $booking->status = BookingStatus::CANCELED->value;
+        $booking->save();
+
+        $this->logger->markSuccess($event->bookingId, $loggerContext);
+    }
+}

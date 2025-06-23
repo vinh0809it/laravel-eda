@@ -11,7 +11,8 @@ test('BookingCompleted event has correct event type and aggregate type', functio
         carId: fakeUuid(),
         actualEndDate: fakeDateFromNow(),
         additionalPrice: fakeMoney(),
-        finalPrice: fakeMoney()
+        finalPrice: fakeMoney(),
+        completionNote: faker()->sentence()
     );
 
     // Assert
@@ -28,7 +29,8 @@ test('BookingCompleted event can be serialized and deserialized', function () {
         carId: fakeUuid(),
         actualEndDate: fakeDateFromNow(),
         additionalPrice: fakeMoney(),
-        finalPrice: fakeMoney()
+        finalPrice: fakeMoney(),
+        completionNote: faker()->sentence()
     );
 
     // Act
