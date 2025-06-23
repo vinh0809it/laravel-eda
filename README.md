@@ -1,66 +1,148 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<h1 align="center">
+  Laravel API with Event-Driven Architecture (EDA) & Domain-Driven Design (DDD)
+</h1>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+    <a href="https://laravel.com/"><img src="https://img.shields.io/badge/Laravel-10-FF2D20.svg?style=flat&logo=laravel" alt="Laravel 12"/></a>
+    <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.1-777BB4.svg?style=flat&logo=php" alt="PHP 8.2"/></a>
+    <a href="#"><img src="https://github.com/yourusername/yourrepo/actions/workflows/laravel-tests.yml/badge.svg" alt="GithubActions"/></a>
 </p>
 
-## About Laravel
+## 🚀 Current Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Booking API Endpoints:**
+  - Get bookings
+  - Create booking
+  - Change booking
+  - Complete booking
+  - Cancel booking
+- **Booking Domain** with event-sourced aggregate and projections
+- **Car Domain** and **Pricing Domain** with clear boundaries
+- Event Store and event replay for aggregate state
+- Event listeners and projections for read models
+- Integration and unit tests for core flows
+- Clean separation of Application, Domain, Infrastructure, and Presentation layers
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📘 Introduction
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+This project is my exploration of building a robust Laravel API using **Event-Driven Architecture (EDA)**, **Event Sourcing**, and **Domain-Driven Design (DDD)**, all within the context of **Clean Architecture**.  
+The goal is to create a scalable, maintainable, and testable foundation for complex business domains—demonstrated here with a booking system.
 
-## Learning Laravel
+**Why EDA & Event Sourcing?**  
+Event sourcing ensures every state change is captured as an immutable event, providing a complete audit trail and enabling powerful features like event replay, temporal queries, and easy integration with other systems.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Why DDD?**  
+Domain-Driven Design helps keep business logic at the core, with clear boundaries and ubiquitous language, making the codebase easier to reason about and evolve.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+**Why Clean Architecture?**  
+It enforces separation of concerns, making the system more modular and adaptable to change.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Feedback is welcome!**  
+If you spot any issues, have suggestions, or want to discuss architecture, please open an issue or contact me directly.
 
-## Laravel Sponsors
+Email: vinh0809it@gmail.com  
+Facebook: [vinh0809it](https://www.facebook.com/vinh0809it/)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 📗 Installation
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+1. `composer install`
+2. `cp .env.example .env`
+3. `php artisan key:generate`
+4. Set your DB connection in `.env`
+5. `php artisan migrate`
+6. `php artisan db:seed`
+7. `npm install`
+8. `npm run build`
+7. `php artisan test`
+8. `composer run dev`
+9. Import the collection (exported from Isomnia) from the `api-doc` folder for API doc
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 📁 Project Structure
 
-## Code of Conduct
+This project follows a strict separation of concerns, inspired by Clean Architecture and DDD, with a strong focus on EDA and event sourcing.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+src/
+├── Domain/
+│   ├── Booking/
+│   ├── Car/
+│   ├── Pricing/
+│   └── Shared/
+├── Application/
+│   ├── Booking/
+│   ├── Car/
+│   ├── Pricing/
+│   └── Shared/
+├── Infrastructure/
+│   ├── Booking/
+│   ├── Car/
+│   ├── Pricing/
+│   ├── EventStore/
+│   └── Shared/
+├── Presentation/
+│   ├── Booking/
+│   ├── Car/
+│   ├── Pricing/
+│   └── Shared/
+```
 
-## Security Vulnerabilities
+**Layer Responsibilities:**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Domain:** Aggregates, entities, value objects, domain services, and events.
+- **Application:** Use cases (commands, queries, handlers), DTOs, ...
+- **Infrastructure:** Projections, event consumers, repositories, event store, service providers, and integrations.
+- **Presentation:** Controllers and request adapters (API layer).
 
-## License
+**Request Flow:**
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+Route → Controller
+      → Command/Query
+      → Command/Query Handler
+      → Aggregate (persisted via Event Store)
+      → Domain Service (executes business logic)
+      → Dispatch Domain Event
+      → Projection (updates read models or views)
+```
+
+---
+
+## 🧩 Key Concepts
+
+- **Event Sourcing:** All changes to aggregates are stored as a sequence of events. Aggregates are reconstructed by replaying these events.
+- **Projections:** Read models are updated by event listeners, ensuring eventual consistency and optimized queries.
+- **CQRS:** Commands mutate state via aggregates; queries read from projections.
+- **Domain Events:** Encapsulate every significant change in the system, enabling decoupled processing and integration.
+
+---
+
+## 🧪 Testing
+
+- **Unit tests** for aggregates, services, and event logic
+- **Feature tests** for API endpoints, use case flows and projection updates
+
+---
+
+## ⭐ Feedback & Contribution
+
+I'm eager to learn and improve!  
+If you have suggestions, spot issues, or want to discuss architecture, please open an issue or contact me.
+
+If you find this project useful, please give it a star ⭐ or leave a comment!
+
+---
+
+## 📚 Further Reading
+
+- [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html)
+- [Domain-Driven Design Reference](https://domainlanguage.com/ddd/reference/)
+- [Clean Architecture](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+---
+
+**Thank you for checking out this project!**  
+Let's build better systems, one event at a time.
