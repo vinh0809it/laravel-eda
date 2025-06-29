@@ -8,4 +8,5 @@ use Src\Domain\Pricing\ValueObjects\Price;
 interface IPriceCalculator
 {
     public function calculateUsagePrice(Price $dailyPrice, Carbon $startDate, Carbon $endDate): float;
-} 
+    public function calculatePopularityFee(Price $dailyPrice, int $bookedCount): float;
+}

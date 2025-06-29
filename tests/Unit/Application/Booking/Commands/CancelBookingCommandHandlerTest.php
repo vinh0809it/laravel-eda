@@ -61,6 +61,7 @@ beforeEach(function () {
         model: faker()->word(),
         year: (int) faker()->year(),
         pricePerDay: fakeMoney(),
+        popularityFee: fakeMoney(),
         bookedCount: 0
     );
 });

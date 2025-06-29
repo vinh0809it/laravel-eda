@@ -6,12 +6,10 @@ namespace Tests\Unit\Domain\Booking\Services;
 
 use Src\Domain\Booking\Services\BookingService;
 use Src\Application\Shared\DTOs\PaginationDTO;
-use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 use Src\Domain\Booking\ReadRepositories\IBookingReadRepository;
 use Src\Domain\Booking\Snapshots\BookingSnapshot;
 
 beforeEach(function () {
-    $this->faker = \Faker\Factory::create();
     $this->readRepo = mock(IBookingReadRepository::class);
     $this->service = new BookingService($this->readRepo);
 });
@@ -24,13 +22,13 @@ test('returns paginated bookings with filters', function () {
     $sortDirection = 'desc';
 
     $filters = [
-        'user_id' => $this->faker->uuid(),
-        'car_id' => $this->faker->uuid(),
+        'user_id' => fakeUuid(),
+        'car_id' => fakeUuid(),
         'status' => 'created',
     ];
 
     $expectedBooking = new BookingSnapshot(
-        id: $this->faker->uuid(),
+        id: fakeUuid(),
         carId: $filters['car_id'],
         userId: $filters['user_id'],
         startDate: now()->format('Y-m-d H:i:s'),
@@ -72,18 +70,18 @@ test('returns paginated bookings with filters', function () {
 
 test('returns booking by id', function () {
     // Arrange
-    $bookingId = $this->faker->uuid();
+    $bookingId = fakeUuid();
     $expectedBooking = new BookingSnapshot(
         id: $bookingId,
-        carId: $this->faker->uuid(),
-        userId: $this->faker->uuid(),
+        carId: fakeUuid(),
+        userId: fakeUuid(),
         startDate: now()->format('Y-m-d H:i:s'),
         endDate: now()->addDays(5)->format('Y-m-d H:i:s'),
         originalPrice: 500.00,
         status: 'created'
     );
 
-    $this->readRepo->shouldReceive('findById')
+    $this->readRepo->shouldReceive('findBookingById')
         ->with($bookingId)
         ->andReturn($expectedBooking);
 
@@ -97,15 +95,15 @@ test('returns booking by id', function () {
 
 test('returns null when booking not found', function () {
     // Arrange
-    $bookingId = $this->faker->uuid();
+    $bookingId = fakeUuid();
 
-    $this->readRepo->shouldReceive('findById')
+    $this->readRepo->shouldReceive('findBookingById')
         ->with($bookingId)
-        ->andThrow(new BookingNotFoundException(trace: ['bookingId' => $bookingId]));
+        ->andReturnNull();
 
-    $this->expectException(BookingNotFoundException::class);
-        
     // Act
-    $this->service->getBookingById($bookingId);
+    $result = $this->service->getBookingById($bookingId);
+
+    expect($result)->toBeNull();
 })
 ->group('booking_service');

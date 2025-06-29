@@ -15,6 +15,14 @@ class BookingService implements IBookingService
         private readonly IBookingReadRepository $bookingReadRepository
     ) {}
 
+    /**
+     * @param string $userId
+     * @param string $carId
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * 
+     * @return bool
+     */
     public function hasBookingConflict(string $userId, string $carId, Carbon $startDate, Carbon $endDate): bool
     {
         return $this->bookingReadRepository->hasBookingConflict(
@@ -25,6 +33,15 @@ class BookingService implements IBookingService
         );
     }
 
+    /**
+     * @param int $page
+     * @param int $perPage
+     * @param string $sortBy
+     * @param string $sortDirection
+     * @param array $filters
+     * 
+     * @return IPaginationResult
+     */
     public function getBookings(
         int $page = 1,
         int $perPage = 10,
@@ -44,8 +61,13 @@ class BookingService implements IBookingService
         return $paginatedResult;
     }
 
-    public function getBookingById(string $bookingId): BookingSnapshot
+    /**
+     * @param string $bookingId
+     * 
+     * @return BookingSnapshot|null
+     */
+    public function getBookingById(string $bookingId): ?BookingSnapshot
     {
-        return $this->bookingReadRepository->findById($bookingId);
+        return $this->bookingReadRepository->findBookingById($bookingId);
     }   
 }

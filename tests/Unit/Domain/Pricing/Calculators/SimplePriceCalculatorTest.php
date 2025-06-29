@@ -74,3 +74,25 @@ test('handles fractional daily rates', function () {
     expect($result)->toBe($expectedOriginalPrice);
 })
 ->group('simple_price_calculator');
+
+dataset('popularity_fee_cases', [
+    [7,     0.0],
+    [23,  200.0],
+    [35,  300.0],
+    [62,  600.0],
+    [70,  700.0],
+    [99,  900.0],
+]);
+
+test('handles calculate popularity fee', function (int $bookedCount, float $expectedFee) {
+    // Arrange
+    $dailyPrice = new Price(1000);
+
+    // Act
+    $result = $this->calculator->calculatePopularityFee($dailyPrice, $bookedCount);
+
+    // Assert
+    expect($result)->toBe($expectedFee);
+
+})->with('popularity_fee_cases')
+->group('simple_price_calculator');

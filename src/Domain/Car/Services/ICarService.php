@@ -8,4 +8,4 @@ interface ICarService
 {
     public function getDailyPrice(string $carId): float;
     public function findCarById(string $carId): ?CarSnapshot;
-} 
+}

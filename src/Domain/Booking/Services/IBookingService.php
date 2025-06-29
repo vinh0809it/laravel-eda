@@ -20,5 +20,5 @@ interface IBookingService
         array $filters = []
     ): IPaginationResult;
 
-    public function getBookingById(string $bookingId): BookingSnapshot;
+    public function getBookingById(string $bookingId): ?BookingSnapshot;
 }

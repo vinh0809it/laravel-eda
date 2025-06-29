@@ -13,16 +13,32 @@ class PriceService implements IPriceService
         private readonly IPriceCalculator $priceCalculator,
     ) {}
 
-    public function calculateBookingPrice(float $dailyPrice, Carbon $startDate, Carbon $endDate): float
+    /**
+     * @param float $dailyPrice
+     * @param float $popularityFee
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * 
+     * @return float
+     */
+    public function calculateBookingPrice(float $dailyPrice, float $popularityFee, Carbon $startDate, Carbon $endDate): float
     {
         $price = new Price($dailyPrice);
-        return $this->priceCalculator->calculateUsagePrice(
+
+        $bookingUsagePrice = $this->priceCalculator->calculateUsagePrice(
             $price, 
             $startDate, 
             $endDate
         );
+
+        return $bookingUsagePrice + $popularityFee;
     }
 
+    /**
+     * @param AdditionalPriceCalculationDTO $additionalPriceCalculationDTO
+     * 
+     * @return float
+     */
     public function calculateAdditionalPrice(AdditionalPriceCalculationDTO $additionalPriceCalculationDTO): float
     {
         $dailyPrice = $additionalPriceCalculationDTO->pricePerDay;
@@ -35,8 +51,30 @@ class PriceService implements IPriceService
         );
     }
 
+    /**
+     * @param float $bookingPrice
+     * @param float $additionalPrice
+     * 
+     * @return float
+     */
     public function calculateFinalPrice(float $bookingPrice, float $additionalPrice): float
     {
         return $bookingPrice + $additionalPrice;
+    }
+
+    /**
+     * @param float $dailyPrice
+     * @param int $bookedCount
+     * 
+     * @return float
+     */
+    public function calculatePopularityFee(float $dailyPrice, int $bookedCount): float
+    {
+        $price = new Price($dailyPrice);
+
+        return $this->priceCalculator->calculatePopularityFee(
+            $price, 
+            $bookedCount
+        );
     }
 }

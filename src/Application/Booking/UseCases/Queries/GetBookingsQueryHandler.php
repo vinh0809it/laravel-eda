@@ -8,6 +8,7 @@ use Src\Application\Shared\Interfaces\IQuery;
 use Src\Domain\Shared\Interfaces\IPaginationResult;
 use Src\Domain\Booking\Services\IBookingService;
 use Src\Application\Shared\Interfaces\IQueryHandler;
+use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 
 class GetBookingsQueryHandler implements IQueryHandler
 {
@@ -25,6 +26,9 @@ class GetBookingsQueryHandler implements IQueryHandler
 
             $bookings = $this->bookingService->getBookingById($query->getBookingId());
 
+            if(!$bookings) {
+                throw new BookingNotFoundException(trace: ['bookingId' => $query->getBookingId()]);
+            }
         }else {
             $filters = [
                 'start_date' => $query->getStartDate(),
@@ -44,4 +48,4 @@ class GetBookingsQueryHandler implements IQueryHandler
 
         return $bookings;
     }
-} 
+}

@@ -9,7 +9,6 @@ use Src\Infrastructure\Booking\Models\Booking;
 use Src\Domain\Shared\Interfaces\IPaginationResult;
 use Src\Application\Shared\DTOs\PaginationDTO;
 use Src\Domain\Booking\Enums\BookingStatus;
-use Src\Domain\Booking\Exceptions\BookingNotFoundException;
 use Src\Domain\Booking\Snapshots\BookingSnapshot;
 
 class BookingReadRepository extends BaseRepository implements IBookingReadRepository
@@ -20,6 +19,14 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
         parent::__construct($model);
     }
     
+    /**
+     * @param string $userId
+     * @param string $carId
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * 
+     * @return bool
+     */
     public function hasBookingConflict(string $userId, string $carId, Carbon $startDate, Carbon $endDate): bool
     { 
         return $this->model->whereBetween('start_date', [$startDate, $endDate])
@@ -33,13 +40,16 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
             ->exists();
     }
 
-    public function paginate(
-        int $page,
-        int $perPage,
-        string $sortBy,
-        string $sortDirection,
-        array $filters = []
-    ): IPaginationResult {
+    /**
+     * @param int $page
+     * @param int $perPage
+     * @param string $sortBy
+     * @param string $sortDirection
+     * @param array $filters
+     * 
+     * @return IPaginationResult
+     */
+    public function paginate(int $page, int $perPage, string $sortBy, string $sortDirection,  array $filters = []): IPaginationResult {
 
         $query = $this->model->newQuery();
         
@@ -66,12 +76,17 @@ class BookingReadRepository extends BaseRepository implements IBookingReadReposi
         );
     }
 
-    public function findById(string $bookingId): BookingSnapshot
+    /**
+     * @param string $bookingId
+     * 
+     * @return BookingSnapshot|null
+     */
+    public function findBookingById(string $bookingId): ?BookingSnapshot
     {
         $booking = $this->model->find($bookingId);
 
         if (!$booking) {
-            throw new BookingNotFoundException(trace: ['bookingId' => $bookingId]);
+            return null;
         }
 
         return BookingSnapshot::fromArray($booking->toArray());

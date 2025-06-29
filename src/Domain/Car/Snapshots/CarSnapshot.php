@@ -10,6 +10,7 @@ class CarSnapshot
         public readonly string $model,
         public readonly int $year,
         public readonly float $pricePerDay,
+        public readonly float $popularityFee,
         public readonly int $bookedCount,
     ) {}
 
@@ -21,6 +22,7 @@ class CarSnapshot
             'model' => $this->model,
             'year' => $this->year,
             'pricePerDay' => $this->pricePerDay,
+            'popularityFee' => $this->popularityFee,
             'bookedCount' => $this->bookedCount,
         ];
     }
@@ -33,6 +35,7 @@ class CarSnapshot
             model: $data['model'],
             year: $data['year'],
             pricePerDay: $data['price_per_day'],
+            popularityFee: $data['popularity_fee'],
             bookedCount: $data['booked_count']
         );
     }

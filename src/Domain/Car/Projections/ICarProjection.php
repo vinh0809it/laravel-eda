@@ -16,4 +16,5 @@ interface ICarProjection extends IBaseProjection
     public function increaseBookedCount(string $id): void;
     public function decreaseBookedCount(string $id): void;
     public function updateLastBookingCompletedAt(string $id, Carbon $completedAt): void;
-} 
+    public function updatePopularityFee(string $id, float $newPopularityFee): void;
+}

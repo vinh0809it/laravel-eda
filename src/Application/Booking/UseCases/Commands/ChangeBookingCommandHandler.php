@@ -12,6 +12,7 @@ use Src\Application\Shared\Interfaces\ICommand;
 use Src\Application\Shared\Interfaces\ICommandHandler;
 use Src\Application\Booking\DTOs\BookingResponseDTO;
 use Src\Domain\Booking\Exceptions\BookingNotFoundException;
+use Src\Domain\Car\Exceptions\CarNotFoundException;
 use Src\Domain\Shared\Services\IEventSourcingService;
 
 final class ChangeBookingCommandHandler implements ICommandHandler
@@ -42,12 +43,20 @@ final class ChangeBookingCommandHandler implements ICommandHandler
 
         $booking = BookingAggregate::replayEvents($events);
 
-        // Get daily price from Car
-        $dailyPrice = $this->carService->getDailyPrice($booking->getCarId());
+        // Get price from Car
+        $carId = $booking->getCarId();
+        $carSnapshot = $this->carService->findCarById($carId);
+
+        if (!$carSnapshot) {
+            throw new CarNotFoundException(
+                trace: ['carId' => $carId]
+            );
+        }
 
         // Calc the new Booking Price
         $newOriginalPrice = $this->priceService->calculateBookingPrice(
-            dailyPrice: $dailyPrice,
+            dailyPrice: $carSnapshot->pricePerDay,
+            popularityFee: $carSnapshot->popularityFee,
             startDate: $command->newStartDate,
             endDate: $command->newEndDate
         );
@@ -65,4 +74,4 @@ final class ChangeBookingCommandHandler implements ICommandHandler
         $responseDTO = new BookingResponseDTO($booking);
         return $responseDTO->forChanging();
     }
-} 
+}

@@ -17,7 +17,9 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    $this->car = Car::factory()->create();
+    $this->car = Car::factory()->create([
+        'booked_count' => 10
+    ]);
 
     $this->token = $this->user->createToken('test-token')->plainTextToken;
 
@@ -70,9 +72,12 @@ test('test completes a booking successfully', function () {
         'status' => BookingStatus::COMPLETED->value
     ]);
 
+    $expectedPopularityFeeUpdated = $this->car->price_per_day * 0.1;
+    
     $this->assertDatabaseHas('cars', [
         'id' => $this->car->id,
-        'last_booking_completed_at' => now()->toDateTimeString()
+        'last_booking_completed_at' => now()->toDateTimeString(),
+        'popularity_fee' => $expectedPopularityFeeUpdated
     ]);
 })
 ->group('complete_booking_integration');

@@ -63,6 +63,7 @@ beforeEach(function () {
         model: faker()->word(),
         year: (int) faker()->year(),
         pricePerDay: fakeMoney(),
+        popularityFee: fakeMoney(),
         bookedCount: 0
     );
 });
@@ -79,14 +80,14 @@ test('successfully change a booking', function () {
 
     // Mock car service to return car
     $this->carService
-        ->shouldReceive('getDailyPrice')
+        ->shouldReceive('findCarById')
         ->with($this->carId)
-        ->andReturn($this->car->pricePerDay);
+        ->andReturn($this->car);
     
     // Mock price calculation
     $this->priceService
         ->shouldReceive('calculateBookingPrice')
-        ->with($this->car->pricePerDay, $this->command->newStartDate, $this->command->newEndDate)
+        ->with($this->car->pricePerDay, $this->car->popularityFee, $this->command->newStartDate, $this->command->newEndDate)
         ->andReturn($newOriginalPrice);
     
     // Mock event store
@@ -114,13 +115,9 @@ test('throws exception when car is not found', function () {
         ->andReturn($this->events);
 
     $this->carService
-        ->shouldReceive('getDailyPrice')
+        ->shouldReceive('findCarById')
         ->with($this->carId)
-        ->andThrow(
-            new CarNotFoundException(
-                trace: ['carId' => $this->carId]
-            )
-        );
+        ->andReturnNull();
 
     // Assert & Act
     expect(fn () => $this->handler->handle($this->command))

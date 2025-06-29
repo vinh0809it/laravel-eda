@@ -11,36 +11,38 @@ use Src\Application\Pricing\DTOs\AdditionalPriceCalculationDTO;
 use Src\Domain\Car\Snapshots\CarSnapshot;
 
 beforeEach(function () {
-    $this->faker = \Faker\Factory::create();
     $this->priceCalculator = mock(IPriceCalculator::class);
     $this->service = new PriceService($this->priceCalculator);
 });
 
 test('test calculates booking price correctly', function () {
     // Arrange
-    $dailyPrice = $this->faker->randomFloat(2, 100, 1000);
+    $dailyPrice = fakeMoney();
+    $popularityFee = fakeMoney();
 
     $startDate = fakeDateFromNow();
     $endDate = fakeDateFromNow(5);
 
-    $expectedOriginalPrice = $dailyPrice * 5;
+    $expectedUsagePrice = $dailyPrice * 5;
+    $expectedOriginalPrice = $expectedUsagePrice+ $popularityFee;
 
     $car = new CarSnapshot(
-        id: $this->faker->uuid(),
-        brand: $this->faker->word(),
-        model: $this->faker->word(),
-        year: (int) $this->faker->year(),
+        id: fakeUuid(),
+        brand: faker()->word(),
+        model: faker()->word(),
+        year: (int) faker()->year(),
         pricePerDay: $dailyPrice,
+        popularityFee: $popularityFee,
         bookedCount: 0
     );
 
     $this->priceCalculator
         ->shouldReceive('calculateUsagePrice')
         ->once()
-        ->andReturn($expectedOriginalPrice);
+        ->andReturn($expectedUsagePrice);
 
     // Act
-    $result = $this->service->calculateBookingPrice($car->pricePerDay, $startDate, $endDate);
+    $result = $this->service->calculateBookingPrice($car->pricePerDay, $car->popularityFee, $startDate, $endDate);
 
     // Assert
     expect($result)->toBe($expectedOriginalPrice);
@@ -49,29 +51,32 @@ test('test calculates booking price correctly', function () {
 
 test('test handles single day booking', function () {
     // Arrange
-    $dailyPrice = $this->faker->randomFloat(2, 100, 1000);
+    $dailyPrice = fakeMoney();
+    $popularityFee = fakeMoney();
 
     $startDate = fakeDateFromNow();
     $endDate = fakeDateFromNow(1);
 
-    $expectedOriginalPrice = $dailyPrice;
+    $expectedUsagePrice = $dailyPrice;
+    $expectedOriginalPrice = $expectedUsagePrice+ $popularityFee;
 
     $car = new CarSnapshot(
-        id: $this->faker->uuid(),
-        brand: $this->faker->word(),
-        model: $this->faker->word(),
-        year: (int) $this->faker->year(),
+        id: fakeUuid(),
+        brand: faker()->word(),
+        model: faker()->word(),
+        year: (int) faker()->year(),
         pricePerDay: $dailyPrice,
+        popularityFee: $popularityFee,
         bookedCount: 0
     );
 
     $this->priceCalculator
         ->shouldReceive('calculateUsagePrice')
         ->once()
-        ->andReturn($expectedOriginalPrice);
+        ->andReturn($expectedUsagePrice);
 
     // Act
-    $result = $this->service->calculateBookingPrice($car->pricePerDay, $startDate, $endDate);
+    $result = $this->service->calculateBookingPrice($car->pricePerDay, $car->popularityFee, $startDate, $endDate);
 
     // Assert
     expect($result)->toBe($expectedOriginalPrice);
@@ -80,10 +85,10 @@ test('test handles single day booking', function () {
 
 test('test calculate additional price', function () {
     // Arrange
-    $dailyPrice = $this->faker->randomFloat(2, 100, 1000);
+    $dailyPrice = fakeMoney();
 
-    $end = Carbon::now();
-    $actualEnd = $end->clone()->addDays(2);
+    $end = fakeDateFromNow();
+    $actualEnd = fakeDateFromNow(2);
 
     $expectedAddtionalPrice = $dailyPrice * 2;
 
@@ -108,10 +113,10 @@ test('test calculate additional price', function () {
 
 test('test no additional price when end date equal to actual end date', function () {
     // Arrange
-    $dailyPrice = $this->faker->randomFloat(2, 100, 1000);
+    $dailyPrice = fakeMoney();
 
-    $end = Carbon::now();
-    $actualEnd = $end;
+    $end = fakeDateFromNow();
+    $actualEnd = fakeDateFromNow();
 
     $expectedAddtionalPrice = 0.0;
 
@@ -136,8 +141,8 @@ test('test no additional price when end date equal to actual end date', function
 
 test('test calculate final price', function () {
     // Arrange
-    $originalPrice = $this->faker->randomFloat(2, 100, 1000);
-    $additionalPrice = $this->faker->randomFloat(2, 100, 1000);
+    $originalPrice = fakeMoney();
+    $additionalPrice = fakeMoney();
 
     $expectedFinalPrice = $originalPrice + $additionalPrice;
 
@@ -149,5 +154,27 @@ test('test calculate final price', function () {
 
     // Assert
     expect($result)->toBe($expectedFinalPrice);
+})
+->group('price_service');
+
+test('test calculate popularity fee', function () {
+    // Arrange
+    $dailyPrice = fakeMoney();
+    $bookedCount = faker()->randomNumber(2);
+    $expectedPopularityFee = fakeMoney();
+
+    $this->priceCalculator
+        ->shouldReceive('calculatePopularityFee')
+        ->once()
+        ->andReturn($expectedPopularityFee);
+
+    // Act
+    $result = $this->service->calculatePopularityFee(
+        $dailyPrice,
+        $bookedCount
+    );
+
+    // Assert
+    expect($result)->toBe($expectedPopularityFee);
 })
 ->group('price_service');

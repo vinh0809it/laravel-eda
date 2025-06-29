@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-
         Schema::create('cars', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('brand');
             $table->string('model');
             $table->integer('year');
             $table->decimal('price_per_day', 10, 2);
+            $table->decimal('popularity_fee')->default(0);
             $table->integer('booked_count')->default(0);
             $table->timestamp('last_booking_completed_at')->nullable();
             $table->timestamps();

@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Tests\Unit\Domain\Car\Services;
 
 use Src\Domain\Car\Services\CarService;
-use Src\Domain\Car\Projections\ICarProjection;
 use Src\Domain\Car\Exceptions\CarNotFoundException;
+use Src\Domain\Car\ReadRepositories\ICarReadRepository;
 use Src\Domain\Car\Snapshots\CarSnapshot;
-use Src\Infrastructure\Car\Models\Car;
 
 beforeEach(function () {
-    $this->projection = mock(ICarProjection::class);
-    $this->service = new CarService($this->projection);
+    $this->readRepo = mock(ICarReadRepository::class);
+    $this->service = new CarService($this->readRepo);
 });
 
 test('finds car by id and returns Snapshot', function () {
@@ -24,13 +23,14 @@ test('finds car by id and returns Snapshot', function () {
         'model' => faker()->word(),
         'year' => (int) faker()->year(),
         'price_per_day' => fakeMoney(),
+        'popularity_fee' => fakeMoney(),
         'booked_count' => 0
     ];
 
-    $this->projection
-        ->shouldReceive('findById')
+    $this->readRepo
+        ->shouldReceive('findCarById')
         ->with($carId)
-        ->andReturn(new Car($carData));
+        ->andReturn(CarSnapshot::fromArray($carData));
 
     // Act
     $result = $this->service->findCarById($carId);
@@ -42,7 +42,8 @@ test('finds car by id and returns Snapshot', function () {
         ->and($result->brand)->toBe($carData['brand'])
         ->and($result->model)->toBe($carData['model'])
         ->and($result->year)->toBe($carData['year'])
-        ->and($result->pricePerDay)->toBe($carData['price_per_day']);
+        ->and($result->pricePerDay)->toBe($carData['price_per_day'])
+        ->and($result->popularityFee)->toBe($carData['popularity_fee']);
 })
 ->group('car_service');
 
@@ -50,8 +51,8 @@ test('returns null when car not found', function () {
     // Arrange
     $carId = faker()->uuid();
 
-    $this->projection
-        ->shouldReceive('findById')
+    $this->readRepo
+        ->shouldReceive('findCarById')
         ->with($carId)
         ->andReturnNull();
 
@@ -65,17 +66,23 @@ test('returns null when car not found', function () {
 
 test('gets daily price for car', function () {
     // Arrange
-    $carId = faker()->uuid();
-    $pricePerDay = faker()->randomFloat(2, 100, 1000);
+    $carId = fakeUuid();
+    $pricePerDay = fakeMoney();
+
     $carData = [
         'id' => $carId,
-        'price_per_day' => $pricePerDay
+        'brand' => faker()->word(),
+        'model' => faker()->word(),
+        'year' => (int) faker()->year(),
+        'price_per_day' => $pricePerDay,
+        'popularity_fee' => fakeMoney(),
+        'booked_count' => faker()->randomNumber()
     ];
 
-    $this->projection
-        ->shouldReceive('findById')
+    $this->readRepo
+        ->shouldReceive('findCarById')
         ->with($carId)
-        ->andReturn(new Car($carData));
+        ->andReturn(CarSnapshot::fromArray($carData));
 
     // Act
     $result = $this->service->getDailyPrice($carId);
@@ -89,8 +96,8 @@ test('throws exception when getting price of non-existent car', function () {
     // Arrange
     $carId = faker()->uuid();
 
-    $this->projection
-        ->shouldReceive('findById')
+    $this->readRepo
+        ->shouldReceive('findCarById')
         ->with($carId)
         ->andReturnNull();
 

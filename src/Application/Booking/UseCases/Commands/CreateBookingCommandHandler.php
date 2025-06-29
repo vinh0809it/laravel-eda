@@ -13,7 +13,6 @@ use Src\Domain\Booking\Exceptions\BookingConflictException;
 use Src\Application\Booking\DTOs\BookingResponseDTO;
 use Src\Domain\Shared\Services\IEventSourcingService;
 use Ramsey\Uuid\Uuid;
-use Src\Domain\Car\Snapshots\CarSnapshot;
 
 class CreateBookingCommandHandler implements ICommandHandler
 {
@@ -31,9 +30,9 @@ class CreateBookingCommandHandler implements ICommandHandler
         }
 
         // Validate car is available
-        $car = $this->carService->findCarById($command->carId);
+        $carSnapshot = $this->carService->findCarById($command->carId);
 
-        if (!$car) {
+        if (!$carSnapshot) {
             throw new CarNotFoundException(
                 trace: ['carId' => $command->carId]
             );
@@ -56,18 +55,10 @@ class CreateBookingCommandHandler implements ICommandHandler
             );
         }
 
-        $carSnapshot = new CarSnapshot(
-            id: $car->id,
-            brand: $car->brand,
-            model: $car->model,
-            year: $car->year,
-            pricePerDay: $car->pricePerDay,
-            bookedCount: $car->bookedCount
-        );
-        
         // Calculate original price using PriceService
         $originalPrice = $this->priceService->calculateBookingPrice(
-            dailyPrice: $carSnapshot->pricePerDay, 
+            dailyPrice: $carSnapshot->pricePerDay,
+            popularityFee: $carSnapshot->popularityFee,
             startDate: $command->startDate, 
             endDate: $command->endDate
         );
