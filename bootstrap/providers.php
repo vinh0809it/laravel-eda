@@ -1,15 +1,15 @@
 <?php
 
-use Src\Infrastructure\Providers\AppServiceProvider;
-use Src\Infrastructure\Providers\BookingServiceProvider;
-use Src\Infrastructure\Providers\CarServiceProvider;
-use Src\Infrastructure\Providers\EventServiceProvider;
-use Src\Infrastructure\Providers\PriceServiceProvider;
+use Src\Booking\Infrastructure\Providers\BookingServiceProvider;
+use Src\Car\Infrastructure\Providers\CarServiceProvider;
+use Src\Identity\Infrastructure\Providers\IdentityServiceProvider;
+use Src\Pricing\Infrastructure\Providers\PricingServiceProvider;
+use Src\Shared\Infrastructure\Providers\SharedServiceProvider;
 
 return [
-    AppServiceProvider::class,
-    BookingServiceProvider::class, 
+    SharedServiceProvider::class,
+    IdentityServiceProvider::class,
+    PricingServiceProvider::class,
     CarServiceProvider::class,
-    EventServiceProvider::class,
-    PriceServiceProvider::class,
+    BookingServiceProvider::class,
 ];

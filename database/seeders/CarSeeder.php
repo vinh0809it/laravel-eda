@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Src\Infrastructure\Car\Models\Car;
+use Src\Car\Infrastructure\Persistence\Eloquent\CarModel;
 use Illuminate\Database\Seeder;
 
 class CarSeeder extends Seeder
@@ -12,7 +12,7 @@ class CarSeeder extends Seeder
      */
     public function run(): void
     {
-        Car::factory()->create([
+        CarModel::factory()->create([
             'id' => '836fbc9c-923f-429d-8ec4-1633bd0450b9',
             'brand' => 'VINFAST',
             'model' => 'VF8',

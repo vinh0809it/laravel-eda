@@ -5,16 +5,16 @@
          colors="true"
 >
     <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
-        <testsuite name="Feature">
-            <directory>tests/Feature</directory>
-        </testsuite>
+        <testsuite name="Booking"><directory>tests/Booking</directory></testsuite>
+        <testsuite name="Car"><directory>tests/Car</directory></testsuite>
+        <testsuite name="Pricing"><directory>tests/Pricing</directory></testsuite>
+        <testsuite name="Identity"><directory>tests/Identity</directory></testsuite>
+        <testsuite name="Shared"><directory>tests/Shared</directory></testsuite>
+        <testsuite name="Architecture"><directory>tests/Architecture</directory></testsuite>
     </testsuites>
     <source>
         <include>
-            <directory>app</directory>
+            <directory>src</directory>
         </include>
     </source>
     <php>

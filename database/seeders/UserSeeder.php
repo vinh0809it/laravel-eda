@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Src\Infrastructure\User\ReadModels\User;
+use Src\Identity\Infrastructure\Persistence\Eloquent\User;
 
 class UserSeeder extends Seeder
 {

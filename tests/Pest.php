@@ -15,7 +15,7 @@ use Illuminate\Testing\TestResponse;
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature', 'Unit');
+    ->in('Booking', 'Car', 'Pricing', 'Identity', 'Shared', 'Architecture');
 
 /*
 |--------------------------------------------------------------------------
@@ -48,16 +48,6 @@ use Carbon\Carbon;
 
 function faker(): Generator {
     return app(Generator::class);
-}
-
-function mockEventDispatcher()
-{
-    $dispatcher = mock(\Illuminate\Contracts\Events\Dispatcher::class);
-    $dispatcher->shouldReceive('dispatch')->andReturnUsing(function ($event) {
-        return $event;
-    });
-    app()->instance('events', $dispatcher);
-    return $dispatcher;
 }
 
 function fakeMoney(int $from = 100, int $to = 1000): float {

@@ -3,10 +3,10 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Src\Infrastructure\Car\Models\Car;
+use Src\Car\Infrastructure\Persistence\Eloquent\CarModel;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Src\Infrastructure\Car\Models\Car>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Src\Car\Infrastructure\Persistence\Eloquent\CarModel>
  */
 class CarFactory extends Factory
 {
@@ -15,7 +15,7 @@ class CarFactory extends Factory
      *
      * @var string
      */
-    protected $model = Car::class;
+    protected $model = CarModel::class;
 
     /**
      * Define the model's default state.

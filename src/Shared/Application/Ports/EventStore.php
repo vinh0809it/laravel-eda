@@ -1,0 +1,10 @@
+<?php
+
+namespace Src\Shared\Application\Ports;
+
+interface EventStore
+{
+    public function append(string $eventType, string $aggregateType, string $aggregateId, array $eventData, array $metadata = [], int $version = 1): void;
+    public function getEvents(string $aggregateType, string $aggregateId): array;
+    public function getLatestVersion(string $aggregateType, string $aggregateId): int;
+} 

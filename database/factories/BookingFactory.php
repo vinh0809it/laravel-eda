@@ -3,10 +3,10 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Src\Infrastructure\Booking\Models\Booking;
+use Src\Booking\Infrastructure\Persistence\Eloquent\BookingReadModel;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Src\Infrastructure\Booking\Models\Booking>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Src\Booking\Infrastructure\Persistence\Eloquent\BookingReadModel>
  */
 class BookingFactory extends Factory
 {
@@ -15,7 +15,7 @@ class BookingFactory extends Factory
      *
      * @var string
      */
-    protected $model = Booking::class;
+    protected $model = BookingReadModel::class;
 
     /**
      * Define the model's default state.

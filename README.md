@@ -3,8 +3,8 @@
 </h1>
 
 <p align="center">
-    <a href="https://laravel.com/"><img src="https://img.shields.io/badge/Laravel-12-FF2D20.svg?style=flat&logo=laravel" alt="Laravel 12"/></a>
-    <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.2-777BB4.svg?style=flat&logo=php" alt="PHP 8.2"/></a>
+    <a href="https://laravel.com/"><img src="https://img.shields.io/badge/Laravel-13-FF2D20.svg?style=flat&logo=laravel" alt="Laravel 13"/></a>
+    <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.5-777BB4.svg?style=flat&logo=php" alt="PHP 8.5"/></a>
 </p>
 
 ## 🚀 Current Features
@@ -66,50 +66,69 @@ If you find this project useful, please give it a star ⭐ or leave a comment!
 
 ## 📁 Project Structure
 
-This project follows a strict separation of concerns, inspired by Clean Architecture and DDD, with a strong focus on EDA and event sourcing.
+The codebase is a **modular monolith**: every bounded context is a module with its own
+Domain, Application, Infrastructure and Presentation layers. `Shared` is the shared kernel.
 
 ```
 src/
-├── Domain/
-│   ├── Booking/
-│   ├── Car/
-│   ├── Pricing/
-│   └── Shared/
-├── Application/
-│   ├── Booking/
-│   ├── Car/
-│   ├── Pricing/
-│   └── Shared/
-├── Infrastructure/
-│   ├── Booking/
-│   ├── Car/
-│   ├── Pricing/
-│   ├── EventStore/
-│   └── Shared/
-├── Presentation/
-│   ├── Booking/
-│   ├── Car/
-│   ├── Pricing/
-│   └── Shared/
+├── Shared/                 shared kernel: buses, event store, base classes, API error envelope
+│   ├── Domain/             AggregateRoot, DomainEvent, exceptions
+│   ├── Application/        Bus (CommandBus, QueryBus, Command, Query...), Ports (AggregateRepository, EventStore, EventMapper, EventProcessLogger)
+│   ├── Infrastructure/     Bus/Sync*Bus, EventSourcing/EventSourcedAggregateRepository, Persistence/Eloquent/*, ModuleServiceProvider
+│   └── Presentation/       ApiExceptionRenderer, base Controller, Inertia middleware
+├── Booking/
+│   ├── Domain/             BookingAggregate, domain events, exceptions
+│   ├── Application/        Ports (BookingReadRepository, CarCatalog, BookingPricing), UseCases/<UseCase>/{Command|Query, Handler}, DTOs, Listeners
+│   ├── Infrastructure/     Persistence/Eloquent (BookingReadModel, projector, read repository), Adapters to Car and Pricing, migrations, provider
+│   └── Presentation/       HTTP controller, FormRequests, BookingResource, routes/api.php
+├── Car/
+│   ├── Contracts/          CarCatalog + CarSnapshot: the only things other modules may use
+│   ├── Application/        ReadModelCarCatalog, ports, listeners reacting to Booking events
+│   ├── Domain/             events, exceptions
+│   └── Infrastructure/     Persistence/Eloquent (CarModel, CarProjector, read repository), Pricing adapter, migrations, provider
+├── Pricing/
+│   ├── Contracts/          PriceService
+│   ├── Domain/             Price value object, PriceCalculator, DefaultPriceService
+│   └── Infrastructure/     PricingServiceProvider
+└── Identity/
+    ├── Infrastructure/     User model, migrations, IdentityServiceProvider
+    └── Presentation/       API auth controller, Breeze web controllers, routes/{api,web}.php
+
+tests/
+├── Architecture/           layer rules + module boundary rules (Pest arch)
+├── Booking/{Unit,Feature}
+├── Car/Unit, Pricing/Unit, Shared/Unit
+└── Identity/Feature
 ```
 
-**Layer Responsibilities:**
+**Module boundaries** (enforced by `tests/Architecture/ModuleBoundariesTest.php`):
 
-- **Domain:** Aggregates, entities, value objects, domain services, and events.
-- **Application:** Use cases (commands, queries, handlers), DTOs, ...
-- **Infrastructure:** Projections, event consumers, repositories, event store, service providers, and integrations.
-- **Presentation:** Controllers and request adapters (API layer).
+1. A module may use another module only through `Src\<Module>\Contracts` (and, until
+   integration events land, `Src\<Module>\Domain\Events`). Everything else is private.
+2. A module that needs another module declares its own port in `Application/Ports` and
+   implements it with an adapter in `Infrastructure/Adapters` (anti-corruption layer).
+   Example: `Booking\Application\Ports\CarCatalog` ← `Booking\Infrastructure\Adapters\CarCatalogAdapter` → `Car\Contracts\CarCatalog`.
+
+**Layer rules** (enforced by `tests/Architecture/LayersTest.php`): inside a module dependencies
+point inwards only, Domain never imports the framework, use cases are `final readonly`.
+
+**Wiring:** each module has one `ModuleServiceProvider` that declares its command/query handlers,
+event listeners, event subscribers (projectors), persisted events, routes and migrations. There is no
+central registry. A projector declares the events it reacts to in its own `subscribe()` method.
+
+**Naming:** interfaces carry the role (`BookingReadRepository`, `CommandBus`), implementations carry the
+technology (`EloquentBookingReadRepository`, `SyncCommandBus`). Eloquent classes live under
+`Infrastructure/Persistence/Eloquent`; a Doctrine implementation would sit next to it.
 
 **Request Flow:**
 
 ```
-Route → Controller
-      → Command/Query
-      → Command/Query Handler
-      → Aggregate (persisted via Event Store)
-      → Domain Service (executes business logic)
-      → Dispatch Domain Event
-      → Projection (updates read models or views)
+Route (module routes/api.php) → Controller → FormRequest
+      → Command / Query (final readonly)
+      → CommandBus / QueryBus (handlers resolved lazily from the container)
+      → Handler → Aggregate (loaded and saved through the Event Store)
+      → Domain Event → Projectors (read models) + Listeners (side effects), own module and subscribed modules
+      → BookingDTO → BookingResource (JSON)
 ```
 
 ---
@@ -127,6 +146,7 @@ Route → Controller
 
 - **Unit tests** for aggregates, services, and event logic
 - **Feature tests** for API endpoints, use case flows and projection updates
+- **Architecture tests** (`tests/Architecture`) that enforce the dependency direction between layers; CI runs the whole suite on PHP 8.5
 
 ---
 
